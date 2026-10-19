@@ -297,6 +297,9 @@ select.tin{appearance:auto}
 .badge{font-size:11px; font-weight:600; background:var(--fill); border-radius:999px; padding:3px 9px; white-space:nowrap}
 .target{font-family:var(--f-display); font-weight:600; font-size:22px; line-height:1; white-space:nowrap; font-variant-numeric:tabular-nums; padding-top:4px}
 .ex.done .target{color:var(--good)}
+.ssline{display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; font-size:13px; color:var(--ink-2); background:color-mix(in srgb, var(--accent) 10%, transparent); border-radius:12px; padding:8px 10px}
+.ssline b{color:var(--ink); font-weight:600}
+.ssb{font-size:11.5px; font-weight:700; color:var(--on-accent); background:var(--accent); border-radius:999px; padding:3px 9px; white-space:nowrap}
 .last{font-size:13px; color:var(--ink-2); display:flex; flex-wrap:wrap; gap:6px; align-items:center}
 .chip.up{background:color-mix(in srgb, var(--good) 18%, transparent); color:var(--good)}
 .sets{display:grid; gap:8px}
@@ -435,36 +438,38 @@ ol.how{margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px}
 "use strict";
 const ART_URL = location.origin + location.pathname;
 /* ---------- Datos fijos ---------- */
-const E = (key, name, type, sets, reps, note) => ({ key, name, type, sets, reps, note: note || "" });
+// ss: bloque de superserie ("A1", "A2"…). Los que comparten letra se hacen seguidos; sin ss, el ejercicio va solo.
+const E = (key, name, type, sets, reps, note, ss) => ({ key, name, type, sets, reps, note: note || "", ...(ss ? { ss } : {}) });
 const DEFAULTS = {
   braian: { days: [
     { id: "pa", wd: 1, label: "Pierna A", focus: "Cuádriceps", ex: [
       E("hack", "Sentadilla hack", "discos", 3, "6-8", "Profundidad máxima y estabilidad"),
-      E("curl-acostado", "Curl de pierna acostado", "maquina", 3, "12-15"),
-      E("ext-cuad", "Extensiones de cuádriceps", "maquina", 3, "12-15"),
-      E("curl-sentado", "Curl de pierna sentado", "maquina", 3, "12-15"),
-      E("gemelos", "Gemelos en máquina", "maquina", 4, "12", "Pausa de 2 s abajo") ] },
+      E("prensa", "Prensa", "maquina", 3, "10-12", "", "A1"),
+      E("gemelos-prensa", "Gemelos en prensa", "maquina", 3, "12-15", "", "A2"),
+      E("ext-cuad", "Extensiones de cuádriceps", "maquina", 3, "12-15", "", "B1"),
+      E("curl-sentado", "Curl de pierna sentado", "maquina", 3, "12-15", "", "B2") ] },
     { id: "ta", wd: 2, label: "Torso A", focus: "Empuje y tensión", ex: [
-      E("banca-mancuerna", "Press banca plano (mancuerna)", "mancuerna", 3, "6-8"),
-      E("remo-apoyo", "Remo con apoyo", "discos", 3, "10-12"),
-      E("press-militar", "Press militar (mancuerna)", "mancuerna", 3, "10"),
-      E("jalon-neutro", "Jalón al pecho (neutro)", "maquina", 3, "10-12"),
-      E("ext-nuca", "Extensiones tras nuca", "maquina", 3, "12-15"),
-      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15"),
-      E("curl-martillo", "Curl martillo", "mancuerna", 3, "10-12") ] },
+      E("banca-mancuerna", "Press banca plano (mancuerna)", "mancuerna", 3, "6-8", "", "A1"),
+      E("remo-apoyo", "Remo con apoyo", "discos", 3, "10-12", "", "A2"),
+      E("press-militar", "Press militar (mancuerna)", "mancuerna", 3, "10", "", "B1"),
+      E("jalon-neutro", "Jalón al pecho (neutro)", "maquina", 3, "10-12", "", "B2"),
+      E("ext-nuca", "Extensiones tras nuca", "maquina", 3, "12-15", "", "C1"),
+      E("curl-martillo", "Curl martillo", "mancuerna", 3, "10-12", "", "C2"),
+      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15") ] },
     { id: "pb", wd: 4, label: "Pierna B", focus: "Cadena posterior y glúteo", ex: [
-      E("prensa", "Prensa (pies bajos)", "maquina", 3, "10-12"),
-      E("hiperext", "Hiperextensiones 45°", "corporal", 3, "10-15"),
-      E("abductores", "Abductores en máquina", "maquina", 3, "12-15"),
-      E("curl-sentado", "Curl de pierna sentado", "maquina", 3, "12-15"),
-      E("gemelos", "Gemelos en máquina", "maquina", 4, "12", "Control en la bajada") ] },
+      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "8-10", "Por pierna"),
+      E("curl-sentado", "Curl de pierna sentado", "maquina", 3, "12-15", "", "A1"),
+      E("abductores", "Abductores en máquina", "maquina", 3, "12-15", "", "A2"),
+      E("hiperext", "Hiperextensiones 45°", "corporal", 3, "10-15", "", "B1"),
+      E("gemelos", "Gemelos en máquina", "maquina", 3, "12", "Pausa de 2 s abajo", "B2") ] },
     { id: "tb", wd: 5, label: "Torso B", focus: "Tracción y volumen", ex: [
-      E("jalon-pecho", "Jalón al pecho", "maquina", 3, "8-10"),
-      E("press-inclinado-m", "Press inclinado (mancuerna)", "mancuerna", 3, "10-12"),
-      E("remo-banco", "Remo apoyado en banco", "mancuerna", 3, "10-12"),
-      E("vuelos-lat", "Vuelos laterales", "mancuerna", 4, "15"),
-      E("curl-inclinado", "Curl inclinado (mancuerna)", "mancuerna", 3, "12"),
-      E("polea-cuerda", "Empuje en polea con cuerda", "maquina", 3, "12-15") ] }
+      E("jalon-pecho", "Jalón al pecho (prono)", "maquina", 3, "8-10", "", "A1"),
+      E("press-inclinado-m", "Press inclinado (mancuerna)", "mancuerna", 3, "10-12", "", "A2"),
+      E("remo-banco", "Remo apoyado en banco", "mancuerna", 3, "10-12", "", "B1"),
+      E("aperturas", "Aperturas (mancuerna)", "mancuerna", 3, "12-15", "", "B2"),
+      E("curl-inclinado", "Curl inclinado (mancuerna)", "mancuerna", 3, "12", "", "C1"),
+      E("polea-cuerda", "Empuje en polea con cuerda", "maquina", 3, "12-15", "", "C2"),
+      E("vuelos-lat", "Vuelos laterales", "mancuerna", 4, "15") ] }
   ] },
   rocio: { days: [
     { id: "lun", wd: 1, label: "Glúteo · Femoral", focus: "", ex: [
@@ -1237,6 +1242,14 @@ function preGluCard(p, prof) {
 }
 const sumHtml = s => `<span>Series <b>${s.done}/${s.planned}</b></span><span>Volumen <b>${fmtInt(s.vol)} kg</b></span>${s.min ? `<span>Cardio <b>${fmtN(s.min)} min</b></span>` : ""}`;
 function rowsCount(ex, en) { return en && en.rows ? en.rows : Math.max(ex.sets || 1, (en && en.sets && en.sets.length) || 0); }
+function ssLine(day, ex) {
+  const m = /^([A-Z])(\d+)$/.exec(String(ex.ss || "").trim().toUpperCase()); if (!m) return "";
+  const group = day.ex.filter(x => String(x.ss || "").trim().toUpperCase().startsWith(m[1]) && /^[A-Z]\d+$/.test(String(x.ss).trim().toUpperCase()))
+    .sort((a, b) => parseInt(String(a.ss).slice(1), 10) - parseInt(String(b.ss).slice(1), 10));
+  if (group.length < 2) return "";
+  const i = group.indexOf(ex), next = group[i + 1];
+  return `<div class="ssline"><span class="ssb">Superserie ${m[1]} · ${i + 1}/${group.length}</span><span>${next ? `Pasá directo a <b>${esc(next.name)}</b>` : "Después descansá 90 s y repetí la ronda"}</span></div>`;
+}
 function exCard(p, day, ex, sess, path) {
   const en = sess && sess.entries && sess.entries[ex.key];
   const last = lastEntry(p, ex.key, path), base = baseLoad(p, ex.key);
@@ -1251,6 +1264,7 @@ function exCard(p, day, ex, sess, path) {
   return `<article class="ex g${doneCount >= (ex.type === "cardio" ? 1 : ex.sets) ? " done" : ""}" data-card="${esc(ex.key)}">
     <div class="exh"><div class="exl"><span class="exi" style="--exc:var(--${EX_COLOR[ex.type] || "v-teal"})">${SVGI(ex.type === "cardio" ? P_RUN : P_DUMB)}</span><div class="exm"><h3 class="exn">${esc(ex.name)}</h3><div class="meta"><span class="badge">${T.label}${ex.type === "barra" ? ` ${fmtN(ex.bar ?? 20)} kg` : ""}</span>${ex.note ? `<span>${esc(ex.note)}</span>` : ""}</div></div></div>
       <div class="target" title="Objetivo">${tgt}</div></div>
+    ${ssLine(day, ex)}
     <div class="last">${esc(lastTxt)}${hint ? `<span class="chip ${hint.cls}">${esc(hint.txt)}</span>` : ""}</div>
     <div class="sets">${rows.join("")}</div>
     ${isPlate ? `<div class="plates" data-plates>${platesHtml(ex, en, ref, base)}</div>` : ""}
@@ -1474,7 +1488,8 @@ function viewSettings() {
           <label class="lbl sm" for="rr-${id}">${ex.type === "cardio" ? "Tiempo" : "Reps"}<input class="tin" id="rr-${id}" data-f="rt-reps" value="${esc(ex.reps)}"></label>
           ${ex.type === "barra" ? `<label class="lbl sm" for="rb-${id}">Barra kg<input class="tin" id="rb-${id}" data-f="rt-bar" inputmode="decimal" value="${esc(fmtN(ex.bar ?? 20))}"></label>` : ""}
         </div>
-        <label class="lbl sm" for="rno-${id}">Nota<input class="tin" id="rno-${id}" data-f="rt-note" value="${esc(ex.note || "")}" placeholder="Opcional"></label>
+        <div class="grid2"><label class="lbl sm" for="rno-${id}">Nota<input class="tin" id="rno-${id}" data-f="rt-note" value="${esc(ex.note || "")}" placeholder="Opcional"></label>
+          <label class="lbl sm" for="rss-${id}">Superserie<input class="tin" id="rss-${id}" data-f="rt-ss" value="${esc(ex.ss || "")}" placeholder="A1, A2… o vacío" autocapitalize="characters"></label></div>
         <div class="rexbtn"><button type="button" class="ghost" data-act="rt-up" data-write${i === 0 ? " disabled" : ""} aria-label="Subir">↑</button><button type="button" class="ghost" data-act="rt-down" data-write${i === d.ex.length - 1 ? " disabled" : ""} aria-label="Bajar">↓</button><button type="button" class="ghost" data-act="rt-del" data-write>Quitar</button></div>
       </div>`; }).join("");
     return `<details class="rday g" data-day="${esc(d.id)}"${S.openDays.has(d.id) ? " open" : ""}>
@@ -1553,6 +1568,7 @@ function editRoutineField(t) {
       else if (f === "rt-sets") { const n = parseInt(val, 10); if (!(n >= 1 && n <= 12)) return false; ex.sets = n; }
       else if (f === "rt-reps") ex.reps = val;
       else if (f === "rt-note") ex.note = val;
+      else if (f === "rt-ss") { const v = val.trim().toUpperCase(); if (v) ex.ss = v; else delete ex.ss; }
       else if (f === "rt-bar") { const n = parseNum(val); if (n == null || n < 0) return false; ex.bar = n; }
     }
   });
