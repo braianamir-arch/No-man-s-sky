@@ -642,7 +642,9 @@ function curDay() {
   return d;
 }
 function sessionsOf(p) { const out = []; for (const [path, d] of Object.entries(S.docs)) if (path.startsWith("sessions/") && d && d.person === p) out.push({ path, ...d }); return out; }
-const sessionFilled = d => Object.values(d.entries || {}).some(en => (en.sets || []).some(isDone));
+const sessionFilled = d => !!d.done || Object.values(d.entries || {}).some(en => (en.sets || []).some(isDone));
+// Un entreno cuenta como realizado si se tocó "Terminar entreno" o si se cargaron todas las series.
+const finished = (sm, sess) => !!(sess && sess.done) || !!(sm.planned && sm.done >= sm.planned);
 function lastEntry(p, key, excludePath) {
   let best = null;
   for (const d of sessionsOf(p)) {
@@ -1053,7 +1055,7 @@ function heroSlides(p, prof, d) {
   const wd = parseIso(S.date).getDay(), day = days.find(x => x.wd === wd);
   if (day) {
     const sm = sessSummary(day, S.docs[sessPath(p, S.date, day.id)]);
-    if (sm.planned && sm.done >= sm.planned) out.push({ t: `¡${esc(day.label)} completa!`, b: `Hiciste ${sm.done} series y movilizaste ${fmtInt(sm.vol)} kg. Ahora toca comer bien y descansar.`, btn: ["Ver sesión", "go-train", day.id] });
+    if (finished(sm, S.docs[sessPath(p, S.date, day.id)])) out.push({ t: `¡${esc(day.label)} realizada!`, b: `Hiciste ${sm.done} series y movilizaste ${fmtInt(sm.vol)} kg. Ahora toca comer bien y descansar.`, btn: ["Ver sesión", "go-train", day.id] });
     else if (sm.done > 0) out.push({ t: `${esc(day.label)} en curso`, b: `Llevás ${sm.done} de ${sm.planned} series. Seguí donde la dejaste.`, btn: ["Seguir", "go-train", day.id] });
     else out.push({ t: `${isToday ? "Hoy toca" : "Tocaba"} ${esc(day.label)}`, b: `${day.ex.length} ejercicios y ${sm.planned} series.${prof.glucose ? " Medí la glucosa antes de empezar." : ""}`, btn: [isToday ? "Empezar" : "Cargar", "go-train", day.id] });
   } else {
@@ -1078,7 +1080,7 @@ function cardTrainToday(p, prof) {
     return vc("v-purple", isToday ? "Entreno de hoy" : "Entreno", ART.star(), `<div class="v">Descanso</div><p class="s">${nx ? `Lo próximo: ${esc(nx.label)}. ` : ""}Caminar también suma.</p>`, nx ? `data-act="go-train" data-id="${esc(nx.id)}"` : "", true, "Abrir el próximo entreno");
   }
   const sm = sessSummary(day, S.docs[sessPath(p, S.date, day.id)]);
-  const st = sm.planned && sm.done >= sm.planned ? `Completa · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${day.ex.length} ejercicios · ${sm.planned} series`;
+  const st = finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? `Realizada ✓ · ${sm.done} series · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${day.ex.length} ejercicios · ${sm.planned} series`;
   return vc("v-blue", isToday ? "Entreno de hoy" : `Entreno del ${WDL[parseIso(S.date).getDay()]}`, ART.dumbbell(),
     `<div class="v">${esc(day.label)}</div><p class="s">${esc(st)}${day.focus ? " · " + esc(day.focus) : ""}</p>`, `data-act="go-train" data-id="${esc(day.id)}"`, true, `Abrir ${day.label}`);
 }
@@ -1092,7 +1094,7 @@ function actData(p, prof, d) {
   const day = routine(p).days.find(x => x.wd === parseIso(S.date).getDay());
   const sm = day ? sessSummary(day, S.docs[sessPath(p, S.date, day.id)]) : null;
   const a = { steps: d.steps || 0, water: d.water || 0, sm };
-  a.heart = heartSvg([{ f: a.steps / (prof.stepsGoal || 8000), c: "var(--ring-steps)" }, { f: a.water / (prof.waterGoal || 2), c: "var(--ring-water)" }, { f: sm && sm.planned ? sm.done / sm.planned : 0, c: "var(--ring-train)" }]);
+  a.heart = heartSvg([{ f: a.steps / (prof.stepsGoal || 8000), c: "var(--ring-steps)" }, { f: a.water / (prof.waterGoal || 2), c: "var(--ring-water)" }, { f: sm && finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? 1 : sm && sm.planned ? sm.done / sm.planned : 0, c: "var(--ring-train)" }]);
   return a;
 }
 function tileActivity(p, prof, d) {
@@ -1226,11 +1228,12 @@ function viewTrain() {
   return `<div class="stack">
     ${dateBar()}
     <div class="days g" role="group" aria-label="Día de rutina">${chips}</div>
-    <div class="sesshead"><h2>${esc(day.label)}</h2><p>${day.focus ? esc(day.focus) + " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
+    <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}</h2><p>${day.focus ? esc(day.focus) + " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
     ${prof.glucose ? preGluCard(p, prof) : ""}
     ${day.ex.length ? day.ex.map(ex => exCard(p, day, ex, sess, path)).join("") : `<div class="empty g"><b>Este día no tiene ejercicios.</b>Sumalos en Ajustes.</div>`}
     <label class="note card g" for="sess-note"><span class="eyebrow">Notas de la sesión</span><textarea id="sess-note" data-f="sess-note" placeholder="Cómo te sentiste, molestias, cambios de máquina…">${esc(sess && sess.note || "")}</textarea></label>
-    <div class="card g"><div class="sum" id="sum">${sumHtml(sum)}</div>${sess ? `<div><button type="button" class="ghost" data-act="del-sess" data-write>Borrar esta sesión</button></div>` : ""}${conf}</div>
+    <div class="card g"><div class="sum" id="sum">${sumHtml(sum)}</div>
+      <div class="exf">${sess && sess.done ? `<span class="chip good">Entreno realizado ✓</span><button type="button" class="ghost" data-act="finish" data-v="0" data-write>Reabrir</button>` : `<button type="button" class="pillbtn acc" data-act="finish" data-v="1" data-write>Terminar entreno</button>`}${sess ? `<button type="button" class="ghost" data-act="del-sess" data-write>Borrar esta sesión</button>` : ""}</div>${conf}</div>
   </div>`;
 }
 function preGluCard(p, prof) {
@@ -1633,6 +1636,13 @@ function bind() {
     else if (a === "glu-del") { const id = b.dataset.id; editDaily(S.person, S.date, d => { d.glucose = (d.glucose || []).filter(g => g.id !== id); if (!d.glucose.length) delete d.glucose; }, 200); render(); }
     else if (a === "add-set" || a === "rm-set" || a === "repeat") exAction(a, b.dataset.ex);
     else if (a === "del-sess") { S.confirm = "del-sess"; render(); }
+    else if (a === "finish") {
+      const p = S.person, day = curDay(), path = sessPath(p, S.date, day.id), s = sessForEdit(path, p, day), on = b.dataset.v === "1";
+      if (on) { s.done = true; s.doneAt = Date.now(); } else { delete s.done; delete s.doneAt; }
+      s.dayLabel = day.label; s.updated = Date.now(); writeDoc(path, s, 150);
+      if (on) toast(`${day.label} realizada ✓`);
+      render(); if (on) window.scrollTo(0, 0);
+    }
     else if (a === "confirm-yes") confirmYes();
     else if (a === "confirm-no") { S.confirm = null; render(); }
     else if (a === "prog-mode") { S.progMode = b.dataset.m; render(); }
