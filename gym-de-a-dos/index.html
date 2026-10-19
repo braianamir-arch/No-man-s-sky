@@ -23,7 +23,7 @@
    Claro: degradé pastel menta→durazno con tarjetas de vidrio lechoso. Oscuro: verde casi negro con brillo dorado arriba, como la app. */
 :root{
   --bg:#EAF3EF; --bg-a:#CDEBDF; --bg-b:#FBE4D4; --glow:rgba(255,214,140,.55);
-  --card:rgba(255,255,255,.64); --card-line:rgba(255,255,255,.85); --card-in:rgba(20,40,32,.05);
+  --card:rgba(255,255,255,.52); --card-line:rgba(255,255,255,.7); --card-in:rgba(255,255,255,.55); --edge:rgba(255,255,255,.95); --edge-2:rgba(255,255,255,.25);
   --fill:rgba(20,40,32,.06); --fill-2:rgba(20,40,32,.10); --line:rgba(20,40,32,.08);
   --sheet:rgba(247,251,249,.96); --scrim:rgba(10,20,16,.32); --dock:rgba(255,255,255,.78);
   --ink:#13211C; --ink-2:#536460; --ink-3:#8A9893;
@@ -33,15 +33,15 @@
   --vivid-ink:#FFFFFF; --vivid-2:rgba(255,255,255,.82); --vivid-chip:rgba(255,255,255,.22); --vivid-btn:rgba(255,255,255,.24);
   --good:#15804C; --warn:#A5620B; --bad:#C2281C;
   --p25:#D2232A; --p20:#1D58CC; --p15:#E6B417; --p10:#23905A; --p5:#FAFAFA; --psm:#6A7280; --p-ink:#FFFFFF; --p-ink-dark:#1A1A1A;
-  --shadow:0 8px 28px rgba(40,70,60,.08);
+  --shadow:0 10px 30px -10px rgba(40,70,60,.18);
   --f-display:"Outfit","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r-lg:26px; --r:20px; --r-sm:14px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1513; --bg-a:#0E1513; --bg-b:#0E1513; --glow:rgba(190,140,30,.62);
-    --card:#1B1F1E; --card-line:rgba(255,255,255,.05); --card-in:#262B29;
+    --bg:#0F1614; --bg-a:#2B2817; --bg-b:#0A0F0E; --glow:rgba(214,158,38,.78);
+    --card:rgba(30,36,34,.46); --card-line:rgba(255,255,255,.06); --card-in:rgba(255,255,255,.07); --edge:rgba(255,255,255,.30); --edge-2:rgba(255,255,255,.04);
     --fill:rgba(255,255,255,.07); --fill-2:rgba(255,255,255,.13); --line:rgba(255,255,255,.08);
     --sheet:rgba(24,28,27,.97); --scrim:rgba(0,0,0,.55); --dock:rgba(34,38,37,.92);
     --ink:#F1F4F2; --ink-2:#A9B3AF; --ink-3:#77827E;
@@ -49,12 +49,12 @@
     --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
     --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
     --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-    --shadow:none; color-scheme:dark;
+    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0E1513; --bg-a:#0E1513; --bg-b:#0E1513; --glow:rgba(190,140,30,.62);
-  --card:#1B1F1E; --card-line:rgba(255,255,255,.05); --card-in:#262B29;
+  --bg:#0F1614; --bg-a:#2B2817; --bg-b:#0A0F0E; --glow:rgba(214,158,38,.78);
+  --card:rgba(30,36,34,.46); --card-line:rgba(255,255,255,.06); --card-in:rgba(255,255,255,.07); --edge:rgba(255,255,255,.30); --edge-2:rgba(255,255,255,.04);
   --fill:rgba(255,255,255,.07); --fill-2:rgba(255,255,255,.13); --line:rgba(255,255,255,.08);
   --sheet:rgba(24,28,27,.97); --scrim:rgba(0,0,0,.55); --dock:rgba(34,38,37,.92);
   --ink:#F1F4F2; --ink-2:#A9B3AF; --ink-3:#77827E;
@@ -62,7 +62,7 @@
   --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
   --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
   --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-  --shadow:none; color-scheme:dark;
+  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.45;
@@ -70,15 +70,21 @@ body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-siz
   -webkit-tap-highlight-color:transparent}
 #app[data-person="rocio"]{--accent:var(--rocio)}
 .bgfx{position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:radial-gradient(80% 32% at 50% -4%, var(--glow) 0%, transparent 75%),
-    linear-gradient(160deg, var(--bg-a) 0%, var(--bg) 45%, var(--bg-b) 100%)}
+  background:radial-gradient(110% 42% at 50% -8%, var(--glow) 0%, transparent 72%),
+    radial-gradient(70% 38% at -10% 48%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 70%),
+    radial-gradient(70% 36% at 110% 78%, rgba(124,92,230,.24) 0%, transparent 70%),
+    linear-gradient(180deg, var(--bg-a) 0%, var(--bg) 42%, var(--bg-b) 100%)}
 .wrap{position:relative; z-index:1; max-width:640px; margin:0 auto; padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 button{font:inherit; color:inherit; cursor:pointer}
 button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allowed; opacity:.5}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 h1,h2,h3,p{margin:0}
 h1,h2,h3{text-wrap:balance}
-.g{background:var(--card); -webkit-backdrop-filter:blur(20px) saturate(150%); backdrop-filter:blur(20px) saturate(150%); border:1px solid var(--card-line); border-radius:var(--r-lg); box-shadow:var(--shadow)}
+.g{position:relative; background:linear-gradient(165deg, color-mix(in srgb, var(--card) 100%, rgba(255,255,255,.06)) 0%, var(--card) 60%); -webkit-backdrop-filter:blur(28px) saturate(180%); backdrop-filter:blur(28px) saturate(180%); border:1px solid var(--card-line); border-radius:var(--r-lg); box-shadow:inset 0 1px 0 var(--edge-2), var(--shadow)}
+/* borde de luz: más brillante arriba a la izquierda, como el vidrio de Samsung */
+.g::after{content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; pointer-events:none;
+  background:linear-gradient(150deg, var(--edge) 0%, var(--edge-2) 38%, transparent 62%, var(--edge-2) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)}
 .stack{display:grid; gap:12px}
 .card{padding:18px 20px; display:grid; gap:12px; min-width:0}
 .card h2{font-family:var(--f-body); font-weight:600; font-size:16px}
@@ -161,11 +167,13 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 .dots i.on{width:22px; background:var(--ink)}
 
 /* Tarjetas de color (como las de Samsung Health) */
-.vc{position:relative; overflow:hidden; border-radius:var(--r-lg); background:var(--vc, var(--v-blue)); color:var(--vivid-ink); padding:18px 20px; display:grid; gap:10px; align-content:space-between; min-height:178px; min-width:0; text-align:left; border:0; box-shadow:var(--shadow)}
-.vc::before{content:""; position:absolute; inset:0; background:linear-gradient(160deg, rgba(255,255,255,.14) 0%, transparent 55%); pointer-events:none}
+.vc{position:relative; overflow:hidden; border-radius:var(--r-lg); background:var(--vc, var(--v-blue)); color:var(--vivid-ink); padding:18px 20px; display:grid; gap:10px; align-content:space-between; min-height:178px; min-width:0; text-align:left; border:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.30), inset 0 -1px 0 rgba(0,0,0,.12), 0 16px 34px -18px var(--vc, var(--v-blue))}
+.vc::before{content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 90% at 0% 0%, rgba(255,255,255,.22) 0%, transparent 55%), radial-gradient(80% 70% at 100% 110%, rgba(0,0,0,.18) 0%, transparent 60%)}
 .vc > *{position:relative; z-index:1}
 .vc .art{position:absolute; z-index:0; right:-14px; top:-14px; width:132px; height:132px; pointer-events:none}
-.vc .art svg{width:100%; height:100%; display:block}
+.vc .art svg{width:100%; height:100%; display:block; overflow:visible; filter:drop-shadow(0 14px 14px rgba(0,0,0,.28))}
 .vc h3{font-family:var(--f-body); font-weight:500; font-size:15.5px; padding-right:96px}
 .vc .bot{display:grid; gap:4px}
 .vc .v{font-family:var(--f-display); font-weight:600; font-size:34px; line-height:1; font-variant-numeric:tabular-nums}
@@ -403,6 +411,8 @@ ol.how{margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px}
     <linearGradient id="gCapA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D6DCE8"/></linearGradient>
     <linearGradient id="gCapB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB37A"/><stop offset="1" stop-color="#F0561C"/></linearGradient>
     <linearGradient id="gStar" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9B4FF"/><stop offset="1" stop-color="#6A45E8"/></linearGradient>
+    <linearGradient id="gScale" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D1DD"/></linearGradient>
+    <filter id="fSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
     <radialGradient id="gShoe" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#E6FF9A"/><stop offset=".6" stop-color="#8EDB2E"/><stop offset="1" stop-color="#3E9A12"/></radialGradient>
   </defs>
 </svg>
@@ -985,14 +995,46 @@ function topBar() {
 const clamp01 = v => Math.max(0, Math.min(1, v || 0));
 function starPts(cx, cy, ro, ri) { const out = []; for (let k = 0; k < 10; k++) { const a = (-90 + k * 36) * Math.PI / 180, r = k % 2 ? ri : ro; out.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`); } return out.join(" "); }
 const ART = {
-  dumbbell: () => `<svg viewBox="0 0 120 120"><g transform="rotate(-32 60 60)"><rect x="18" y="55" width="84" height="10" rx="5" fill="url(#gMetal)"/><rect x="10" y="40" width="12" height="40" rx="6" fill="url(#gPlate2)"/><rect x="22" y="28" width="16" height="64" rx="8" fill="url(#gPlate)"/><rect x="82" y="28" width="16" height="64" rx="8" fill="url(#gPlate)"/><rect x="98" y="40" width="12" height="40" rx="6" fill="url(#gPlate2)"/><rect x="25" y="33" width="4" height="38" rx="2" fill="#FFFFFF" opacity=".45"/><rect x="85" y="33" width="4" height="38" rx="2" fill="#FFFFFF" opacity=".45"/></g></svg>`,
-  glass: (f, id) => { const lvl = f <= 0 ? 116 : (106 - 84 * clamp01(f)).toFixed(1), cup = "M32 18h56l-7 86a6 6 0 0 1-6 5.5H45a6 6 0 0 1-6-5.5z";
-    return `<svg viewBox="0 0 120 120"><defs><clipPath id="${id}"><path d="${cup}"/></clipPath></defs><g clip-path="url(#${id})"><path d="M8 ${lvl}q12 -7 24 0t24 0t24 0t24 0t24 0V130H8z" fill="url(#gWater)"/></g><path d="${cup}" fill="url(#gGlass)" stroke="#FFFFFF" stroke-opacity=".75" stroke-width="2.5"/><ellipse cx="60" cy="18" rx="28" ry="4" fill="none" stroke="#FFFFFF" stroke-opacity=".85" stroke-width="2.5"/></svg>`; },
-  cells: () => `<svg viewBox="0 0 120 120"><ellipse cx="80" cy="64" rx="30" ry="23" transform="rotate(-25 80 64)" fill="url(#gCell)"/><ellipse cx="80" cy="64" rx="14" ry="9" transform="rotate(-25 80 64)" fill="url(#gCellIn)"/><ellipse cx="40" cy="38" rx="20" ry="15" transform="rotate(20 40 38)" fill="url(#gCell)"/><ellipse cx="40" cy="38" rx="9" ry="6" transform="rotate(20 40 38)" fill="url(#gCellIn)"/><circle cx="52" cy="84" r="10" fill="url(#gSugar)"/><circle cx="100" cy="30" r="8" fill="url(#gSugar)"/><circle cx="22" cy="16" r="7" fill="url(#gSugar)"/></svg>`,
-  dial: () => `<svg viewBox="0 0 120 120"><circle cx="66" cy="56" r="52" fill="#FFFFFF" opacity=".08"/><circle cx="66" cy="56" r="39" fill="#FFFFFF" opacity=".1"/><circle cx="66" cy="56" r="26" fill="none" stroke="url(#gDial)" stroke-width="12" stroke-dasharray="120 44" stroke-linecap="round" transform="rotate(130 66 56)"/><path d="M66 56L52 68" stroke="#10204A" stroke-width="4" stroke-linecap="round"/><circle cx="66" cy="56" r="5" fill="#10204A"/></svg>`,
-  tape: () => `<svg viewBox="0 0 120 120"><path d="M42 84L16 114" stroke="url(#gTape)" stroke-width="16" stroke-linecap="round"/><circle cx="68" cy="54" r="33" fill="none" stroke="url(#gTape)" stroke-width="17"/><circle cx="68" cy="54" r="33" fill="none" stroke="#7A4A06" stroke-opacity=".4" stroke-width="5" stroke-dasharray="1.5 6"/></svg>`,
-  capsule: () => `<svg viewBox="0 0 120 120"><g transform="rotate(-40 64 56)"><path d="M32 56a20 20 0 0 1 20-20h12v40H52a20 20 0 0 1-20-20z" fill="url(#gCapA)"/><path d="M64 36h12a20 20 0 0 1 0 40H64z" fill="url(#gCapB)"/><rect x="40" y="42" width="28" height="5" rx="2.5" fill="#FFFFFF" opacity=".75"/></g></svg>`,
-  star: () => `<svg viewBox="0 0 120 120"><polygon points="${starPts(64, 58, 40, 19)}" fill="url(#gStar)" stroke="url(#gStar)" stroke-width="10" stroke-linejoin="round"/><polygon points="${starPts(18, 22, 9, 2.5)}" fill="#E4D9FF"/><polygon points="${starPts(108, 100, 7, 2)}" fill="#E4D9FF"/></svg>`
+  dumbbell: () => `<svg viewBox="0 0 120 120"><g transform="rotate(-32 60 60)">
+    <rect x="18" y="54" width="84" height="12" rx="6" fill="url(#gMetal)"/><rect x="22" y="56" width="76" height="2.5" rx="1.2" fill="#FFFFFF" opacity=".75"/>
+    <rect x="8" y="38" width="14" height="44" rx="7" fill="url(#gPlate2)"/><ellipse cx="9" cy="60" rx="4" ry="21" fill="#E3ECFF" opacity=".55"/>
+    <rect x="22" y="24" width="18" height="72" rx="9" fill="url(#gPlate)"/><ellipse cx="24" cy="60" rx="5" ry="34" fill="#BFD3FF" opacity=".45"/>
+    <rect x="80" y="24" width="18" height="72" rx="9" fill="url(#gPlate)"/><ellipse cx="82" cy="60" rx="5" ry="34" fill="#BFD3FF" opacity=".45"/>
+    <rect x="98" y="38" width="14" height="44" rx="7" fill="url(#gPlate2)"/>
+    <rect x="27" y="30" width="4" height="30" rx="2" fill="#FFFFFF" opacity=".85" filter="url(#fSoft)"/><rect x="85" y="30" width="4" height="30" rx="2" fill="#FFFFFF" opacity=".85" filter="url(#fSoft)"/></g></svg>`,
+  glass: (f, id) => { const lvl = f <= 0 ? 116 : +(106 - 84 * clamp01(f)).toFixed(1), cup = "M30 16h60l-7 88a7 7 0 0 1-7 6.5H44a7 7 0 0 1-7-6.5z";
+    return `<svg viewBox="0 0 120 120"><defs><clipPath id="${id}"><path d="${cup}"/></clipPath></defs>
+    <g clip-path="url(#${id})"><path d="M8 ${lvl}q12 -6 24 0t24 0t24 0t24 0t24 0V130H8z" fill="url(#gWater)"/>${f > 0 ? `<ellipse cx="60" cy="${lvl + 1}" rx="30" ry="3.5" fill="#BFE0FF" opacity=".7"/><circle cx="50" cy="${lvl + 20}" r="2.6" fill="#FFFFFF" opacity=".6"/><circle cx="68" cy="${lvl + 34}" r="1.8" fill="#FFFFFF" opacity=".5"/>` : ""}</g>
+    <path d="${cup}" fill="url(#gGlass)" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="2.2"/>
+    <path d="M38 24l5 76" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity=".55" filter="url(#fSoft)"/>
+    <ellipse cx="60" cy="16" rx="30" ry="4.5" fill="#FFFFFF" fill-opacity=".18" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="2.2"/></svg>`; },
+  cells: () => `<svg viewBox="0 0 120 120">
+    <ellipse cx="80" cy="64" rx="31" ry="24" transform="rotate(-25 80 64)" fill="url(#gCell)"/><ellipse cx="80" cy="64" rx="15" ry="10" transform="rotate(-25 80 64)" fill="url(#gCellIn)"/>
+    <ellipse cx="68" cy="50" rx="11" ry="5" transform="rotate(-25 68 50)" fill="#FFFFFF" opacity=".55" filter="url(#fSoft)"/>
+    <ellipse cx="40" cy="36" rx="21" ry="16" transform="rotate(20 40 36)" fill="url(#gCell)"/><ellipse cx="40" cy="36" rx="9" ry="6" transform="rotate(20 40 36)" fill="url(#gCellIn)"/>
+    <ellipse cx="32" cy="28" rx="8" ry="3.5" transform="rotate(20 32 28)" fill="#FFFFFF" opacity=".5" filter="url(#fSoft)"/>
+    <circle cx="52" cy="86" r="11" fill="url(#gSugar)"/><circle cx="49" cy="82" r="3.5" fill="#FFFFFF" opacity=".9" filter="url(#fSoft)"/>
+    <circle cx="102" cy="28" r="8" fill="url(#gSugar)"/><circle cx="100" cy="25" r="2.5" fill="#FFFFFF" opacity=".9" filter="url(#fSoft)"/>
+    <circle cx="20" cy="14" r="6" fill="url(#gSugar)"/></svg>`,
+  dial: () => `<svg viewBox="0 0 120 120"><g transform="rotate(-12 64 60)">
+    <rect x="20" y="30" width="88" height="74" rx="22" fill="#8C97A8"/>
+    <rect x="20" y="22" width="88" height="74" rx="22" fill="url(#gScale)"/>
+    <rect x="24" y="25" width="80" height="20" rx="10" fill="#FFFFFF" opacity=".6" filter="url(#fSoft)"/>
+    <rect x="44" y="36" width="40" height="20" rx="7" fill="#17233A"/><rect x="50" y="42" width="28" height="8" rx="3" fill="#5FE3C0" opacity=".9"/>
+    <rect x="34" y="66" width="20" height="22" rx="8" fill="#D9DEE6"/><rect x="74" y="66" width="20" height="22" rx="8" fill="#D9DEE6"/></g></svg>`,
+  tape: () => `<svg viewBox="0 0 120 120">
+    <path d="M40 84L14 114" stroke="url(#gTape)" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="68" cy="54" r="33" fill="none" stroke="#B5610A" stroke-width="19"/>
+    <circle cx="68" cy="54" r="33" fill="none" stroke="url(#gTape)" stroke-width="16"/>
+    <circle cx="68" cy="54" r="33" fill="none" stroke="#7A4A06" stroke-opacity=".45" stroke-width="5" stroke-dasharray="1.5 6"/>
+    <path d="M44 32a33 33 0 0 1 30 -11" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity=".7" filter="url(#fSoft)"/>
+    <circle cx="68" cy="54" r="14" fill="#FFE07A" opacity=".35"/></svg>`,
+  capsule: () => `<svg viewBox="0 0 120 120"><g transform="rotate(-40 64 56)">
+    <path d="M32 56a20 20 0 0 1 20-20h12v40H52a20 20 0 0 1-20-20z" fill="url(#gCapA)"/><path d="M64 36h12a20 20 0 0 1 0 40H64z" fill="url(#gCapB)"/>
+    <rect x="40" y="41" width="56" height="6" rx="3" fill="#FFFFFF" opacity=".85" filter="url(#fSoft)"/></g></svg>`,
+  star: () => `<svg viewBox="0 0 120 120"><polygon points="${starPts(64, 58, 40, 19)}" fill="url(#gStar)" stroke="url(#gStar)" stroke-width="12" stroke-linejoin="round"/>
+    <ellipse cx="56" cy="44" rx="12" ry="7" transform="rotate(-25 56 44)" fill="#FFFFFF" opacity=".6" filter="url(#fSoft)"/>
+    <polygon points="${starPts(18, 22, 9, 2.5)}" fill="#E4D9FF"/><polygon points="${starPts(108, 100, 7, 2)}" fill="#E4D9FF"/></svg>`
 };
 const HEART = "M50 30C58 16 80 16 86 32C92 48 78 66 50 86C22 66 8 48 14 32C20 16 42 16 50 30Z";
 function heartSvg(vals) {
@@ -1108,7 +1150,7 @@ function cardActivityBig(p, prof, d) {
       <div class="arow"><span class="ic" style="background:var(--ring-water)">${SVGI(P_DROP)}</span><b>${fmtN(a.water) || "0"}</b><span>L de agua</span></div>
       <div class="arow"><span class="ic" style="background:var(--ring-train)">${SVGI(P_DUMB)}</span><b>${a.sm ? `${a.sm.done}/${a.sm.planned}` : "—"}</b><span>${a.sm ? "series" : "descanso"}</span></div>
     </div><div class="heart">${a.heart}</div></div>
-    <div class="row"><span class="small">Metas: ${fmtInt(prof.stepsGoal || 8000)} pasos · ${fmtN(prof.waterGoal || 2)} L</span><button type="button" class="pillbtn" data-act="sheet" data-s="steps">Cargar pasos</button></div></section>`;
+    <div class="row"><span class="small">Metas: ${fmtInt(prof.stepsGoal || 8000)} pasos · ${fmtN(prof.waterGoal || 2)} L</span><span class="exf">${stepsAppBtn("ghost")}<button type="button" class="pillbtn" data-act="sheet" data-s="steps">Cargar pasos</button></span></div></section>`;
 }
 function weekStats(p) {
   const ws = weekStart(S.date), we = addDays(ws, 6), per = {}; let sets = 0, vol = 0;
@@ -1190,10 +1232,18 @@ function renderSheet() {
   </div></section>`;
   lockWrites(box);
 }
+// Botón para abrir el contador de pasos del teléfono: Samsung Health en Android, Salud en iPhone.
+function stepsApp() {
+  if (isIOS()) return { name: "Salud", href: "x-apple-health://" };
+  return { name: "Samsung Health", href: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.sec.android.app.shealth;S.browser_fallback_url=" + encodeURIComponent("https://play.google.com/store/apps/details?id=com.sec.android.app.shealth") + ";end" };
+}
+const stepsAppBtn = (cls = "pillbtn") => { const a = stepsApp(); return `<a class="${cls}" href="${esc(a.href)}" data-act="open-steps" style="text-decoration:none">Abrir ${a.name}</a>`; };
 function secSteps(p, prof, d) {
+  const auto = S.docs["settings/steps"] && S.docs["settings/steps"].token;
   return `<div class="sec"><h3>Pasos</h3>
     <label class="fld xl" for="b-steps"><input id="b-steps" type="text" inputmode="numeric" autocomplete="off" data-f="body-steps" value="${d.steps != null ? esc(String(d.steps)) : ""}" placeholder="0"><span class="u">de ${fmtInt(prof.stepsGoal || 8000)}</span></label>
-    <p class="small">${d.stepsSrc === "iphone" ? "Llegaron solos desde el iPhone." : p === "rocio" ? "Con el Atajo del iPhone llegan solos: mirá Ajustes → Pasos desde el iPhone." : "Copialos de Samsung Health. Una página web no puede leer el contador del teléfono."}</p></div>`;
+    <div class="exf">${stepsAppBtn("pillbtn acc")}</div>
+    <p class="small">${d.stepsSrc === "iphone" ? "Llegaron solos desde el iPhone." : `Tocá el botón, mirá el número y volvé: este cuadro queda listo para escribirlo.${isIOS() ? (auto ? " Con el atajo de Ajustes llegan solos." : " En Ajustes → Pasos automáticos podés hacer que lleguen solos.") : ""}`}</p></div>`;
 }
 function secWeight(p, d) {
   const ws = weightStats(p, S.date), lastWaist = dailyOf(p).filter(r => r.waist != null && r.date <= S.date).pop();
@@ -1513,7 +1563,6 @@ function viewSettings() {
         <label class="lbl sm" for="sw-${id}">Momento<select class="tin" id="sw-${id}" data-f="sp-when" data-write>${SUPP_WHEN.map(w => `<option${w === s.when ? " selected" : ""}>${w}</option>`).join("")}</select></label></div>
       <div class="row"><label class="switch" for="sa-${id}"><input type="checkbox" id="sa-${id}" data-f="sp-active"${s.active ? " checked" : ""}>Lo estoy tomando</label><button type="button" class="ghost" data-act="sp-del" data-write>Quitar</button></div>
     </div>`; }).join("");
-  const link = `${ART_URL}#pasos-${p}-`;
   return `<div class="stack">
     <section class="card g"><h2>Metas de ${esc(PEOPLE[p].name)}</h2>
       <ul style="margin:0;padding-left:18px">${PEOPLE[p].goals.map(g => `<li>${esc(g)}</li>`).join("")}</ul>
@@ -1529,12 +1578,7 @@ function viewSettings() {
       <p class="small">${S.mode === "db" ? `Sincronizada con la cuenta ${esc(S.userEmail || "")}: lo que cargue uno lo ve el otro.` : S.mode === "local" ? "Todavía sin cuenta compartida: los datos quedan solo en este teléfono." : ""}</p>
       <div class="exf"><button type="button" class="ghost" data-act="export" data-free>Descargar copia</button><label class="ghost" for="imp-file" style="cursor:pointer">Importar copia<input type="file" id="imp-file" accept="application/json,.json" data-f="import" data-free hidden></label>${S.mode === "db" ? `<button type="button" class="ghost" data-act="logout" data-free>Cerrar sesión</button>` : ""}</div>
     </section>
-    <section class="card g"><h2>Pasos desde el iPhone</h2>
-      <p class="small">${p === "rocio" ? "Con la app Atajos, el iPhone lee los pasos de Salud y los manda acá. Los nombres de las acciones pueden variar un poco según la versión de iOS. El atajo abre el link en Safari: la primera vez hay que entrar con la cuenta también ahí." : "Esto funciona en iPhone. En Android ninguna página web puede leer Samsung Health: cargá los pasos con el botón +."}</p>
-      <ol class="how"><li>En Atajos, creá un atajo nuevo.</li><li>Agregá <b>Buscar muestras de Salud</b>: tipo Pasos, fecha de inicio “hoy”.</li><li>Agregá <b>Calcular estadísticas</b> con Suma y después <b>Redondear número</b>.</li><li>Agregá <b>Texto</b> con este link y, pegado al final, el número redondeado:</li></ol>
-      <div class="copyrow"><code id="sc-link">${esc(link)}</code><button type="button" class="ghost" data-act="copy" data-free>Copiar</button></div>
-      <ol class="how" start="5"><li>Agregá <b>Abrir URL</b> con ese texto.</li><li>Opcional: en Automatización, hacé que corra todos los días a las 23:30.</li></ol>
-      <p class="small">Si además usa Apple Watch, la suma puede contar pasos dos veces; en ese caso filtrá las muestras para que el origen sea solo el iPhone.</p></section>
+    ${stepsSettings(p)}
     <section class="card g"><h2>Suplementos</h2>${supps || `<p class="small">Sin suplementos.</p>`}<div><button type="button" class="ghost" data-act="sp-add" data-write>+ Agregar suplemento</button></div></section>
     <section class="card g"><h2>Glucosa</h2>
       <label class="switch" for="glu-on"><input type="checkbox" id="glu-on" data-f="glu-on"${prof.glucose ? " checked" : ""}>Registrar glucosa</label>
@@ -1550,6 +1594,27 @@ function viewSettings() {
     <div class="exf"><button type="button" class="ghost" data-act="rt-add-day" data-write>+ Agregar día</button>${custom ? `<button type="button" class="danger-btn" data-act="rt-reset" data-write>Restaurar rutina original</button>` : ""}</div>
     ${resetConf}
   </div>`;
+}
+function stepsSettings(p) {
+  const copyRow = (id, v) => `<div class="copyrow"><code id="${id}">${esc(v)}</code><button type="button" class="ghost" data-act="copy" data-src="${id}" data-free>Copiar</button></div>`;
+  const app = stepsApp();
+  let body = `<p class="small">${isIOS() ? "El iPhone puede mandar los pasos de Salud a la app solo, todas las noches, con la app Atajos." : "Ninguna app web puede leer Samsung Health. Lo más rápido: tocá el botón, mirá el número y escribilo en el cuadro de pasos, que se abre solo al volver."}</p><div class="exf">${stepsAppBtn("ghost")}</div>`;
+  if (S.mode !== "db") return `<section class="card g"><h2>Pasos</h2>${body}<p class="small">Los pasos automáticos del iPhone necesitan la cuenta compartida.</p></section>`;
+  const tok = S.docs["settings/steps"] && S.docs["settings/steps"].token;
+  body += `<h3 style="font-size:15px;margin-top:4px">Pasos automáticos desde el iPhone</h3>`;
+  if (!tok) return `<section class="card g"><h2>Pasos</h2>${body}<p class="small">Primero creá una clave. Sirve para que el atajo pueda guardar pasos sin iniciar sesión, y solo eso.</p><div><button type="button" class="pillbtn acc" data-act="steps-token" data-write>Crear clave del atajo</button></div></section>`;
+  return `<section class="card g"><h2>Pasos</h2>${body}
+    <ol class="how"><li>Abrí <b>Atajos</b> → pestaña <b>Automatización</b> → <b>Nueva automatización</b> → <b>Hora del día</b>: 23:00, <b>Diariamente</b>, y elegí <b>Ejecutar inmediatamente</b>.</li>
+      <li>Agregá <b>Buscar muestras de Salud</b>: tipo <b>Pasos</b>, fecha de inicio <b>hoy</b>.</li>
+      <li>Agregá <b>Calcular estadísticas</b> con <b>Suma</b>, y después <b>Redondear número</b>.</li>
+      <li>Agregá <b>Obtener contenido de URL</b> con esta dirección:</li></ol>
+    ${copyRow("st-url", (window.GYM_CONFIG || {}).supabaseUrl + "/rest/v1/rpc/registrar_pasos")}
+    <ol class="how" start="5"><li>Tocá <b>Mostrar más</b>: método <b>POST</b>. En <b>Encabezados</b> agregá <b>apikey</b> con este valor:</li></ol>
+    ${copyRow("st-key", (window.GYM_CONFIG || {}).supabaseAnonKey || "")}
+    <ol class="how" start="6"><li>En <b>Cuerpo de la solicitud</b> elegí <b>JSON</b> y agregá tres campos: <b>clave</b> (texto) con este valor,</li></ol>
+    ${copyRow("st-tok", tok)}
+    <ol class="how" start="7"><li><b>persona</b> (texto): <b>${p}</b>, y <b>pasos</b> (número): el <b>Número redondeado</b>.</li><li>Tocá ▶ para probarlo: los pasos aparecen en la app al instante.</li></ol>
+    <p class="small">Con el iPhone bloqueado, iOS a veces no deja leer Salud y el atajo falla esa noche: elegí un horario en que suela usar el teléfono. Si usa Apple Watch, filtrá las muestras para que el origen sea solo el iPhone, así no se cuentan dos veces.</p></section>`;
 }
 function routineEdit(fn) {
   const p = S.person, R = clone(routine(p));
@@ -1651,9 +1716,15 @@ function bind() {
     else if (a === "install") { if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; render(); }); } }
     else if (a === "install-hide") { try { localStorage.setItem("gym-de-a-dos:hide-install", "1"); } catch (err) {} render(); }
     else if (a === "export") exportData();
+    else if (a === "open-steps") { S.awaitSteps = true; }
+    else if (a === "steps-token") {
+      const r = new Uint8Array(16); crypto.getRandomValues(r);
+      writeDoc("settings/steps", { token: Array.from(r, x => x.toString(16).padStart(2, "0")).join(""), updated: Date.now() }, 100);
+      toast("Clave creada"); render();
+    }
     else if (a === "logout") { if (SB) SB.auth.signOut(); }
-    else if (a === "copy") { const txt = $("#sc-link").textContent; const done = () => toast("Link copiado");
-      const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#sc-link")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Seleccionado: copialo con el menú del teléfono"); };
+    else if (a === "copy") { const src = document.getElementById(b.dataset.src || "sc-link"); if (!src) return; const txt = src.textContent; const done = () => toast("Copiado");
+      const fallback = () => { const r = document.createRange(); r.selectNodeContents(src); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Seleccionado: copialo con el menú del teléfono"); };
       try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (err) { fallback(); } }
     else if (a.startsWith("rt-")) routineAction(a, b);
   });
@@ -1717,7 +1788,11 @@ function boot() {
   window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; scheduleRender(); });
   window.addEventListener("appinstalled", () => { installEvt = null; scheduleRender(); });
   window.addEventListener("online", () => sync());
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sync(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    sync();
+    if (S.awaitSteps && S.mode !== "login") { S.awaitSteps = false; S.sheet = "steps"; renderSheet(); setTimeout(() => { const f = $("#b-steps"); if (f) { f.focus(); f.select(); } }, 150); }
+  });
   if (!CFG.supabaseUrl || !CFG.supabaseAnonKey || !window.supabase) {
     S.mode = "local"; render();
     if (pendingHash) { const h = pendingHash; pendingHash = null; applyHashData(h); }
