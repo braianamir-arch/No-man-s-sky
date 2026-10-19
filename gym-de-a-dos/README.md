@@ -27,7 +27,9 @@ La clave `anon` es pública por diseño. Lo que protege los datos es el login y 
 
 ### 2. Publicarla con GitHub Pages (gratis)
 
-En el repositorio: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**. A los minutos queda en `https://<usuario>.github.io/gym-de-a-dos/`.
+La app vive en la carpeta `gym-de-a-dos/` del repositorio `No-man-s-sky`. En el repositorio: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: la rama donde está la carpeta (`main` cuando esté unida, o `claude/artifact-session-9yv1xk`) / `(root)` → Save**. A los minutos queda en `https://braianamir-arch.github.io/No-man-s-sky/gym-de-a-dos/`.
+
+El archivo `.nojekyll` en la raíz del repositorio hace que GitHub Pages publique los archivos tal cual, sin procesarlos.
 
 ### 3. Instalarla
 
@@ -42,7 +44,7 @@ En **Ajustes → App → Importar copia**, elegí el archivo `gym-de-a-dos-copia
 
 ## Pasos desde el iPhone
 
-El atajo de **Ajustes → Pasos desde el iPhone** abre un link como `…/gym-de-a-dos/#pasos-rocio-8421` y la app guarda los pasos. El atajo abre Safari, que en iPhone guarda la sesión aparte de la app instalada: la primera vez hay que iniciar sesión también en Safari. En Android ninguna página web puede leer Samsung Health, así que los pasos se cargan a mano con el botón de registrar.
+El atajo de **Ajustes → Pasos desde el iPhone** abre un link como `https://braianamir-arch.github.io/No-man-s-sky/gym-de-a-dos/#pasos-rocio-8421` y la app guarda los pasos. El atajo abre Safari, que en iPhone guarda la sesión aparte de la app instalada: la primera vez hay que iniciar sesión también en Safari. En Android ninguna página web puede leer Samsung Health, así que los pasos se cargan a mano con el botón de registrar.
 
 ## Actualizar la app
 
