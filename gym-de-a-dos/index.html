@@ -72,7 +72,7 @@ body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-siz
 .bgfx{position:fixed; inset:0; z-index:0; pointer-events:none;
   background:radial-gradient(80% 32% at 50% -4%, var(--glow) 0%, transparent 75%),
     linear-gradient(160deg, var(--bg-a) 0%, var(--bg) 45%, var(--bg-b) 100%)}
-.wrap{position:relative; z-index:1; max-width:640px; margin:0 auto; padding-bottom:calc(116px + env(safe-area-inset-bottom, 0px))}
+.wrap{position:relative; z-index:1; max-width:640px; margin:0 auto; padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 button{font:inherit; color:inherit; cursor:pointer}
 button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allowed; opacity:.5}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
@@ -118,23 +118,22 @@ svg.i{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stro
 label.ghost{display:inline-flex; align-items:center}
 
 /* Barra de secciones con íconos (como la fila de íconos de Samsung Health) */
-.secbar{display:flex; padding:5px; border-radius:999px; gap:2px}
-.secbar button{flex:1 1 0; min-width:0; height:50px; border:0; background:transparent; border-radius:999px; display:grid; place-items:center; color:var(--ink-2)}
-.secbar button svg{width:26px; height:26px}
-.secbar button[aria-pressed="true"]{background:var(--fill-2); color:var(--ink)}
+.secbar{display:flex; padding:5px; border-radius:999px; gap:2px; position:sticky; top:calc(6px + env(safe-area-inset-top, 0px)); z-index:6; margin-bottom:12px; overflow-x:auto; scrollbar-width:none}
+.secbar::-webkit-scrollbar{display:none}
+.secbar:empty{display:none}
+.secbar button{flex:1 0 40px; min-width:40px; height:48px; border:0; background:transparent; border-radius:999px; display:grid; place-items:center; color:var(--ink-2)}
+.secbar button svg{width:24px; height:24px}
+.secbar button[aria-current="page"]{background:var(--fill-2); color:var(--ink)}
+.secbar button[aria-current="page"] svg{stroke-width:2.4}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg)}
 .sechead{display:grid; gap:6px; padding:8px 6px 4px}
 .sechead h2{font-family:var(--f-display); font-weight:600; font-size:26px; line-height:1.15}
 .sechead p{font-size:16px; color:var(--ink-2); line-height:1.45; max-width:58ch}
 
 /* Navegación inferior */
-.dock{position:fixed; left:0; right:0; bottom:0; z-index:8; display:flex; justify-content:center; align-items:center; gap:10px; pointer-events:none;
+.dock{position:fixed; left:0; right:0; bottom:0; z-index:8; display:flex; justify-content:flex-end; align-items:center; gap:10px; pointer-events:none;
   padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))}
 .dock > *{pointer-events:auto}
-.pill{display:flex; padding:6px; border-radius:999px; min-width:0; flex:0 1 440px; background:var(--dock); border:1px solid var(--card-line); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); box-shadow:0 10px 30px rgba(0,0,0,.12)}
-.pill button{flex:1 1 0; min-width:0; border:0; background:transparent; border-radius:999px; display:flex; flex-direction:column; align-items:center; gap:1px; padding:7px 4px; font-size:12px; font-weight:500; color:var(--ink-2)}
-.pill button svg{width:24px; height:24px}
-.pill button[aria-current="page"]{background:var(--fill-2); color:var(--ink); font-weight:700}
-.pill button[aria-current="page"] svg{stroke-width:2.4}
 .fab{width:62px; height:62px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; border:1px solid var(--card-line); background:var(--dock); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); box-shadow:0 10px 30px rgba(0,0,0,.12)}
 .fab svg{width:26px; height:26px}
 
@@ -268,7 +267,7 @@ select.tin{appearance:auto}
   .scrim{animation:fade .2s ease}
   @keyframes up{from{transform:translateY(40px); opacity:.4}to{transform:none; opacity:1}}
   @keyframes fade{from{opacity:0}to{opacity:1}}
-  .av,.pill button,.secbar button,.supp .ck,.sbtn .dot{transition:transform .18s ease, opacity .18s ease, background-color .18s ease}
+  .av,.secbar button,.supp .ck,.sbtn .dot{transition:transform .18s ease, opacity .18s ease, background-color .18s ease}
   .vc.tap,.tile{transition:transform .15s ease}
   .vc.tap:active,.tile:active{transform:scale(.985)}
 }
@@ -418,20 +417,15 @@ ol.how{margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px}
         <button type="button" id="who-rocio" class="av av-r" data-act="person" data-p="rocio" aria-pressed="false" aria-label="Rocío">R</button>
       </div>
     </header>
+    <nav id="secbar" class="secbar g" aria-label="Secciones"></nav>
     <div id="banner" class="banner g" hidden></div>
     <main id="view"></main>
   </div>
   <div id="sheet"></div>
   <div id="toast" class="toast g" role="status" hidden></div>
-  <nav class="dock" aria-label="Secciones">
-    <div class="pill">
-      <button type="button" id="tab-home" data-act="tab" data-t="home" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M12 16.6s-3-1.8-3-3.7a1.6 1.6 0 0 1 3-.8 1.6 1.6 0 0 1 3 .8c0 1.9-3 3.7-3 3.7z"/></svg>Inicio</button>
-      <button type="button" id="tab-train" data-act="tab" data-t="train"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/></svg>Entrenar</button>
-      <button type="button" id="tab-prog" data-act="tab" data-t="prog"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5h16M5.5 15.5l4-4.5 3.5 3 5.5-6.5"/></svg>Progreso</button>
-      <button type="button" id="tab-settings" data-act="tab" data-t="settings"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Ajustes</button>
-    </div>
+  <div class="dock">
     <button type="button" class="fab" id="fab" data-act="sheet" data-s="all" aria-label="Registrar del día"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 8.5v7M8.5 12h7"/></svg></button>
-  </nav>
+  </div>
 </div>
 
 <script src="config.js"></script>
@@ -920,7 +914,7 @@ function render() {
   $("#app").dataset.person = S.person;
   $("#who-name").textContent = PEOPLE[S.person].name;
   document.querySelectorAll("[data-act=person]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === S.person)));
-  document.querySelectorAll("[data-act=tab]").forEach(b => { if (b.dataset.t === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  $("#secbar").innerHTML = S.mode === "login" ? "" : topBar();
   $("#app").dataset.mode = S.mode;
   renderStatus(); renderBanner();
   const v = view();
@@ -968,7 +962,19 @@ const SI = {
   glu: SVGI('<path d="M12 3.5s-5.5 6-5.5 10a5.5 5.5 0 0 0 11 0c0-4-5.5-10-5.5-10z"/><path d="M8.8 14h1.8l1-2 1.6 4 1-2h1"/>'),
   nutri: SVGI('<path d="M7 3.5h10l-1.4 16a1.6 1.6 0 0 1-1.6 1.5H10a1.6 1.6 0 0 1-1.6-1.5z"/><path d="M7.6 10c1.5-.8 3-.8 4.4 0s2.9.8 4.4 0"/>')
 };
-const SECS = [["all", "Resumen"], ["act", "Actividad"], ["train", "Entreno"], ["body", "Cuerpo"], ["glu", "Glucosa"], ["nutri", "Agua y suplementos"]];
+const SECS = [["all", "Resumen"], ["act", "Actividad"], ["body", "Cuerpo"], ["glu", "Glucosa"], ["nutri", "Agua y suplementos"]];
+const P_PROG = '<path d="M4 19.5h16M5.5 15.5l4-4.5 3.5 3 5.5-6.5"/>';
+const P_SET = '<path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>';
+// Una sola barra arriba: secciones del inicio y pantallas de la app, en el orden en que se usan.
+function topBar() {
+  const items = [["sec", "all", "Resumen", SI.all], ["sec", "act", "Actividad", SI.act], ["tab", "train", "Entrenar", SI.train], ["sec", "body", "Cuerpo", SI.body]];
+  if (profile(S.person).glucose) items.push(["sec", "glu", "Glucosa", SI.glu]);
+  items.push(["sec", "nutri", "Agua y suplementos", SI.nutri], ["tab", "prog", "Progreso", SVGI(P_PROG)], ["tab", "settings", "Ajustes", SVGI(P_SET)]);
+  return items.map(([kind, k, n, ic]) => {
+    const on = kind === "tab" ? S.tab === k : S.tab === "home" && S.sec === k;
+    return `<button type="button" id="nav-${k}" ${kind === "tab" ? `data-act="tab" data-t="${k}"` : `data-act="sec" data-k="${k}"`}${on ? ' aria-current="page"' : ""} aria-label="${n}" title="${n}">${ic}</button>`;
+  }).join("");
+}
 const clamp01 = v => Math.max(0, Math.min(1, v || 0));
 function starPts(cx, cy, ro, ri) { const out = []; for (let k = 0; k < 10; k++) { const a = (-90 + k * 36) * Math.PI / 180, r = k % 2 ? ri : ro; out.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`); } return out.join(" "); }
 const ART = {
@@ -998,7 +1004,6 @@ function viewHome() {
   const p = S.person, prof = profile(p), d = getDaily(p, S.date), cw = chartWidth();
   const secs = SECS.filter(([k]) => k !== "glu" || prof.glucose);
   if (!secs.some(([k]) => k === S.sec)) S.sec = "all";
-  const bar = `<div class="secbar g" role="group" aria-label="Secciones">${secs.map(([k, n]) => `<button type="button" id="sec-${k}" data-act="sec" data-k="${k}" aria-pressed="${k === S.sec}" aria-label="${n}" title="${n}">${SI[k]}</button>`).join("")}</div>`;
   const hasSupps = prof.supps.some(s => s.active), rows = dailyOf(p);
   let body;
   if (S.sec === "act") {
@@ -1006,11 +1011,6 @@ function viewHome() {
     body = secHead("Actividad", `Caminar también suma. ${d.steps != null ? `Llevás ${fmtInt(d.steps)} de ${fmtInt(goal)} pasos.` : "Cargá los pasos del día con el botón de abajo a la derecha."}`)
       + dateBar() + cardActivityBig(p, prof, d) + cardWeek(p)
       + chartCard("Pasos", "últimos 14 días · línea: meta", bars14(rows, "steps", goal, cw, v => v >= 1000 ? fmtN(Math.round(v / 100) / 10) + "k" : String(v)));
-  } else if (S.sec === "train") {
-    const day = routine(p).days.find(x => x.wd === parseIso(S.date).getDay()), plan = routine(p).days.length;
-    body = secHead("Entreno", day ? `${S.date === today() ? "Hoy toca" : "Ese día tocaba"} ${esc(day.label)}. Cuando hacés el tope de repeticiones en todas las series, subí la carga.` : "Día de descanso. Recuperar también es parte del plan.")
-      + dateBar() + cardTrainToday(p, prof) + cardWeek(p)
-      + chartCard("Constancia", `días por semana · plan ${plan}`, weeksChart(weeksData(p), plan, cw));
   } else if (S.sec === "body") {
     body = secHead("Cuerpo", p === "rocio" ? "La grasa no baja por zonas: por eso se sigue la cintura además del peso." : "Si sube el peso y la cintura no, vas bien. Si suben los dos, sobra comida.")
       + dateBar() + gridOf([tileWeight(p), tileWaist(p, prof)])
@@ -1041,7 +1041,7 @@ function viewHome() {
   }
   let hide = false; try { hide = localStorage.getItem("gym-de-a-dos:hide-install") === "1"; } catch (e) {}
   const inst = S.sec === "all" && !hide && !isStandalone() ? `<section class="card g" aria-label="Instalar"><div class="row"><h2>Instalá la app</h2><button type="button" class="ghost" data-act="install-hide" data-free>Ahora no</button></div>${installHtml()}</section>` : "";
-  return `<div class="stack">${bar}${inst}${body}</div>`;
+  return `<div class="stack">${inst}${body}</div>`;
 }
 function heroSlides(p, prof, d) {
   const out = [], days = routine(p).days, isToday = S.date === today();
