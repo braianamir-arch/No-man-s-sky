@@ -6,11 +6,15 @@
 <title>Gym de a Dos</title>
 <meta name="description" content="Rutinas, cargas, pasos, agua, peso, glucosa y suplementos de Braian y Rocío.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#EAF3EF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#E6E0B8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#745A1F" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="ios-bar">
+<script>
+// iPhone: la app se dibuja detrás de la barra de estado (como Samsung Health). En modo claro, letras oscuras.
+try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getElementById("ios-bar").content = "default"; } catch (e) {}
+</script>
 <meta name="apple-mobile-web-app-title" content="Gym de a Dos">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -22,7 +26,7 @@
 /* Layout: estilo Samsung Health. Columna de 640px; arriba título + barra de secciones con íconos; tarjetas de color vivo con ilustración en la esquina y tarjetas neutras para datos; píldora de navegación flotante y botón redondo de registro.
    Claro: degradé pastel menta→durazno con tarjetas de vidrio lechoso. Oscuro: verde casi negro con brillo dorado arriba, como la app. */
 :root{
-  --bg:#EAF3EF; --bg-a:#CDEBDF; --bg-b:#FBE4D4; --glow:rgba(255,214,140,.55);
+  --bg:#EAF3EF; --bg-a:#CDEBDF; --bg-b:#FBE4D4; --glow:rgba(255,214,140,.55); --top:#E6E0B8;
   --card:rgba(255,255,255,.52); --card-line:rgba(255,255,255,.7); --card-in:rgba(255,255,255,.55); --edge:rgba(255,255,255,.95); --edge-2:rgba(255,255,255,.25);
   --fill:rgba(20,40,32,.06); --fill-2:rgba(20,40,32,.10); --line:rgba(20,40,32,.08);
   --sheet:rgba(247,251,249,.96); --scrim:rgba(10,20,16,.32); --dock:rgba(255,255,255,.78);
@@ -40,7 +44,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#18211E; --bg-a:#2C2918; --bg-b:#101614; --glow:rgba(168,124,34,.82);
+    --bg:#18211E; --bg-a:#2C2918; --bg-b:#101614; --glow:rgba(168,124,34,.62); --top:#745A1F;
     --card:rgba(42,50,47,.34); --card-line:rgba(255,255,255,.07); --card-in:rgba(255,255,255,.07); --edge:rgba(255,255,255,.36); --edge-2:rgba(255,255,255,.04);
     --fill:rgba(255,255,255,.07); --fill-2:rgba(255,255,255,.13); --line:rgba(255,255,255,.08);
     --sheet:rgba(24,28,27,.97); --scrim:rgba(0,0,0,.55); --dock:rgba(34,38,37,.92);
@@ -53,7 +57,7 @@
   }
 }
 :root[data-theme="dark"]{
-  --bg:#18211E; --bg-a:#2C2918; --bg-b:#101614; --glow:rgba(168,124,34,.82);
+  --bg:#18211E; --bg-a:#2C2918; --bg-b:#101614; --glow:rgba(168,124,34,.62); --top:#745A1F;
   --card:rgba(42,50,47,.34); --card-line:rgba(255,255,255,.07); --card-in:rgba(255,255,255,.07); --edge:rgba(255,255,255,.36); --edge-2:rgba(255,255,255,.04);
   --fill:rgba(255,255,255,.07); --fill-2:rgba(255,255,255,.13); --line:rgba(255,255,255,.08);
   --sheet:rgba(24,28,27,.97); --scrim:rgba(0,0,0,.55); --dock:rgba(34,38,37,.92);
@@ -70,7 +74,8 @@ body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-siz
   -webkit-tap-highlight-color:transparent}
 #app[data-person="rocio"]{--accent:var(--rocio)}
 .bgfx{position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:radial-gradient(140% 40% at 50% -6%, var(--glow) 0%, transparent 74%),
+  background:linear-gradient(180deg, var(--top) 0px, color-mix(in srgb, var(--top) 0%, transparent) 150px),
+    radial-gradient(140% 40% at 50% -6%, var(--glow) 0%, transparent 74%),
     radial-gradient(70% 38% at -10% 48%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
     radial-gradient(70% 36% at 110% 78%, rgba(124,92,230,.13) 0%, transparent 70%),
     linear-gradient(180deg, var(--bg-a) 0%, var(--bg) 42%, var(--bg-b) 100%)}
@@ -148,7 +153,7 @@ label.ghost{display:inline-flex; align-items:center}
 .secbar.g{background:color-mix(in srgb, var(--card) 45%, transparent)}
 .secbar button[aria-current="page"]{background:var(--fill-2); color:var(--ink)}
 .secbar button[aria-current="page"] svg{stroke-width:2.2}
-body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg)}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--top)}
 .sechead{display:grid; gap:6px; padding:8px 6px 4px}
 .sechead h2{font-family:var(--f-display); font-weight:600; font-size:26px; line-height:1.15}
 .sechead p{font-size:16px; color:var(--ink-2); line-height:1.45; max-width:58ch}
