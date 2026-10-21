@@ -1083,7 +1083,6 @@ function profileMenu() {
       ${row("Altura", prof.height ? `${prof.height} cm` : "—")}
       ${row("Peso", ws.last ? `${fmtN(ws.last.weight)} kg · ${fmtShort(ws.last.date)}` : "—")}
       ${row("Cintura", waist ? `${fmtN(waist.waist)} cm · ${fmtShort(waist.date)}` : "—")}
-      ${(f => f ? row("Grasa corporal", `${fmtN(f.bodyFat)} % · ${fmtShort(f.date)}`) : "")(dailyOf(p).filter(r => r.bodyFat != null).pop())}
       ${row("Meta de pasos", fmtInt(prof.stepsGoal || 8000))}
       ${row("Meta de agua", `${fmtN(prof.waterGoal || 2)} L`)}
       <p class="small">${PEOPLE[p].goals.map(esc).join(" · ")}</p></div>
@@ -1163,8 +1162,8 @@ function cardGoal(p, prof) {
     const dd = Math.round(ws.delta * 10) / 10; pace = `${dd < 0 ? "−" : dd > 0 ? "+" : "±"}${fmtN(Math.abs(dd))} kg esta semana`;
     const e = goalEta(cur, goal, ws.delta); if (e) eta = `llegarías en ${e}`;
   }
-  const waist = dailyOf(p).filter(r => r.waist != null).pop(), bf = dailyOf(p).filter(r => r.bodyFat != null).pop();
-  const info = [pace, eta, waist && prof.goalWaist ? `cintura ${fmtN(waist.waist)} cm (meta ${fmtN(prof.goalWaist)})` : "", bf ? `grasa ${fmtN(bf.bodyFat)} %` : ""].filter(Boolean).join(" · ");
+  const waist = dailyOf(p).filter(r => r.waist != null).pop();
+  const info = [pace, eta, waist && prof.goalWaist ? `cintura ${fmtN(waist.waist)} cm (meta ${fmtN(prof.goalWaist)})` : ""].filter(Boolean).join(" · ");
   return `<section class="card g" aria-label="${esc(title)}"><div class="row"><h2>${esc(title)}</h2>${left <= 0 ? '<span class="chip good">¡Llegaste!</span>' : `<span class="small">faltan ${fmtN(left)} kg</span>`}</div>
     <div class="goalrow"><div><div class="bignum">${fmtN(Math.round(cur * 10) / 10)}<small>kg</small></div><span class="small">${ws.a7 != null ? "promedio de 7 días" : "último peso"}</span></div><div class="goalto"><span class="small">meta</span><b>${fmtN(goal)} kg</b></div></div>
     <div class="pbar big"><i style="width:${Math.round(pct * 100)}%"></i></div>
