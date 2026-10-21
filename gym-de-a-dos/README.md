@@ -54,6 +54,14 @@ Una automatización de **Atajos** lee los pasos de Salud y los manda directo a S
 
 Llegan pasos, calorías activas, peso, grasa corporal, sueño, pulso en reposo, minutos de ejercicio y glucosa. El peso cargado a mano en la app tiene prioridad sobre el de la balanza.
 
+## iPhone: pasos, calorías y ejercicio automáticos
+
+Corré `supabase/iphone.sql` en Supabase. La app muestra en **Ajustes → Pasos y salud automáticos → iPhone** cómo armar el atajo que llama a `registrar_dia` todas las noches.
+
+## Spotify
+
+Registrá la app en developer.spotify.com/dashboard (los pasos están en **Ajustes → Spotify**) y poné el **Client ID** en `config.js` (`spotifyClientId`). Los controles necesitan Spotify Premium.
+
 ## Actualizar la app
 
 Después de cambiar cualquier archivo, subí el número de `CACHE` en `sw.js` (por ejemplo `gym-de-a-dos-v2`). Los teléfonos bajan la versión nueva la próxima vez que abran la app con señal.
