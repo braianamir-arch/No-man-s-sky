@@ -44,7 +44,7 @@ En **Ajustes → App → Importar copia**, elegí el archivo `gym-de-a-dos-copia
 
 ## Pasos desde el iPhone
 
-El atajo de **Ajustes → Pasos desde el iPhone** abre un link como `https://braianamir-arch.github.io/No-man-s-sky/gym-de-a-dos/#pasos-rocio-8421` y la app guarda los pasos. El atajo abre Safari, que en iPhone guarda la sesión aparte de la app instalada: la primera vez hay que iniciar sesión también en Safari. En Android ninguna página web puede leer Samsung Health, así que los pasos se cargan a mano con el botón de registrar.
+Una automatización de **Atajos** lee los pasos de Salud y los manda directo a Supabase con la función `registrar_pasos` (de `supabase/pasos.sql`), sin abrir Safari ni iniciar sesión. Los pasos para armarla están en la app, en **Ajustes → Pasos y salud automáticos**, con botones para copiar cada dato.
 
 ## Datos automáticos desde Android (Health Connect)
 
