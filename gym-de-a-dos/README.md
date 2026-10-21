@@ -46,6 +46,14 @@ En **Ajustes → App → Importar copia**, elegí el archivo `gym-de-a-dos-copia
 
 El atajo de **Ajustes → Pasos desde el iPhone** abre un link como `https://braianamir-arch.github.io/No-man-s-sky/gym-de-a-dos/#pasos-rocio-8421` y la app guarda los pasos. El atajo abre Safari, que en iPhone guarda la sesión aparte de la app instalada: la primera vez hay que iniciar sesión también en Safari. En Android ninguna página web puede leer Samsung Health, así que los pasos se cargan a mano con el botón de registrar.
 
+## Datos automáticos desde Android (Health Connect)
+
+1. En Supabase → SQL Editor, corré `supabase/pasos.sql` y después `supabase/salud.sql`.
+2. En la app: **Ajustes → Pasos y salud automáticos → Crear clave**.
+3. Instalá **HC Webhook** gratis desde GitHub (con Obtainium: `https://github.com/mcnaveen/health-connect-webhook`) y seguí los pasos que muestra la app en Ajustes: dirección, tres encabezados (`apikey`, `x-clave`, `x-persona`) y sincronización cada 30 minutos.
+
+Llegan pasos, calorías activas, peso, grasa corporal, sueño, pulso en reposo, minutos de ejercicio y glucosa. El peso cargado a mano en la app tiene prioridad sobre el de la balanza.
+
 ## Actualizar la app
 
 Después de cambiar cualquier archivo, subí el número de `CACHE` en `sw.js` (por ejemplo `gym-de-a-dos-v2`). Los teléfonos bajan la versión nueva la próxima vez que abran la app con señal.

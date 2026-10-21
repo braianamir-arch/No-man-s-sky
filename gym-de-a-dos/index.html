@@ -386,6 +386,9 @@ select.tin{appearance:auto}
 .prow .ss{grid-column:1 / -1; color:var(--ink-2); font-size:13px; font-variant-numeric:tabular-nums}
 
 /* Ajustes */
+details.howto{border-top:1px solid var(--line); padding-top:10px}
+details.howto > summary{cursor:pointer; font-weight:700; font-size:14.5px; padding:4px 0 8px}
+details.howto[open] > summary{margin-bottom:4px}
 details.rday{padding:0}
 details.rday > summary{list-style:none; cursor:pointer; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; gap:10px}
 details.rday > summary::-webkit-details-marker{display:none}
@@ -555,7 +558,7 @@ const PROFILE_DEFAULTS = {
   rocio: { height: null, stepsGoal: 8000, waterGoal: 2, bottle: 1, glucose: true, glu: GLU_DEF, supps: [] }
 };
 const SUPP_WHEN = ["Mañana", "Día", "Post-entreno", "Noche"];
-const GLU_CTX = [["fast", "Ayunas"], ["meal", "Antes de comer"], ["post", "2 h después de comer"], ["pre", "Antes de entrenar"], ["postx", "Después de entrenar"], ["night", "Antes de dormir"]];
+const GLU_CTX = [["fast", "Ayunas"], ["meal", "Antes de comer"], ["post", "2 h después de comer"], ["pre", "Antes de entrenar"], ["postx", "Después de entrenar"], ["night", "Antes de dormir"], ["other", "Otro momento"]];
 const GLU_NAME = Object.fromEntries(GLU_CTX);
 const TYPES = {
   mancuerna: { label: "Mancuernas", unit: "kg c/u", chart: "kg por mancuerna" },
@@ -741,7 +744,7 @@ function gluStatus(v, ctx, R) {
   if (v < R.low) return { cls: "bad", txt: "Baja" };
   if (v >= 250) return { cls: "bad", txt: "Muy alta" };
   if (ctx === "pre") return v < 90 ? { cls: "warn", txt: "Comé antes" } : { cls: "good", txt: "Ok para entrenar" };
-  if (ctx === "post" || ctx === "postx" || ctx === "night") return v < R.post ? { cls: "good", txt: "En rango" } : { cls: "warn", txt: "Alta" };
+  if (ctx === "post" || ctx === "postx" || ctx === "night" || ctx === "other") return v < R.post ? { cls: "good", txt: "En rango" } : { cls: "warn", txt: "Alta" };
   if (v < R.lo) return { cls: "warn", txt: "Algo baja" };
   if (v <= R.hi) return { cls: "good", txt: "En rango" };
   return { cls: "warn", txt: "Alta" };
@@ -1027,6 +1030,7 @@ function profileMenu() {
       ${row("Altura", prof.height ? `${prof.height} cm` : "—")}
       ${row("Peso", ws.last ? `${fmtN(ws.last.weight)} kg · ${fmtShort(ws.last.date)}` : "—")}
       ${row("Cintura", waist ? `${fmtN(waist.waist)} cm · ${fmtShort(waist.date)}` : "—")}
+      ${(f => f ? row("Grasa corporal", `${fmtN(f.bodyFat)} % · ${fmtShort(f.date)}`) : "")(dailyOf(p).filter(r => r.bodyFat != null).pop())}
       ${row("Meta de pasos", fmtInt(prof.stepsGoal || 8000))}
       ${row("Meta de agua", `${fmtN(prof.waterGoal || 2)} L`)}
       <p class="small">${PEOPLE[p].goals.map(esc).join(" · ")}</p></div>
@@ -1214,6 +1218,7 @@ function cardActivityBig(p, prof, d) {
       <div class="arow"><span class="ic" style="background:var(--ring-water)">${SVGI(P_DROP)}</span><b>${fmtN(a.water) || "0"}</b><span>L de agua</span></div>
       <div class="arow"><span class="ic" style="background:var(--ring-train)">${SVGI(P_DUMB)}</span><b>${a.sm ? `${a.sm.done}/${a.sm.planned}` : "—"}</b><span>${a.sm ? "series" : "descanso"}</span></div>
     </div><div class="heart">${a.heart}</div></div>
+    ${[d.activeKcal != null ? `${fmtInt(d.activeKcal)} kcal activas` : "", d.exerciseMin ? `${d.exerciseMin} min de ejercicio` : "", d.sleepMin ? `${Math.floor(d.sleepMin / 60)} h ${d.sleepMin % 60} min de sueño` : "", d.restingHr ? `pulso en reposo ${d.restingHr}` : ""].filter(Boolean).length ? `<p class="small">${[d.activeKcal != null ? `${fmtInt(d.activeKcal)} kcal activas` : "", d.exerciseMin ? `${d.exerciseMin} min de ejercicio` : "", d.sleepMin ? `${Math.floor(d.sleepMin / 60)} h ${d.sleepMin % 60} min de sueño` : "", d.restingHr ? `pulso en reposo ${d.restingHr}` : ""].filter(Boolean).join(" · ")}</p>` : ""}
     <div class="row"><span class="small">Metas: ${fmtInt(prof.stepsGoal || 8000)} pasos · ${fmtN(prof.waterGoal || 2)} L</span><span class="exf">${stepsAppBtn("ghost")}<button type="button" class="pillbtn" data-act="sheet" data-s="steps">Cargar pasos</button></span></div></section>`;
 }
 function weekStats(p) {
@@ -1307,7 +1312,7 @@ function secSteps(p, prof, d) {
   return `<div class="sec"><h3>Pasos</h3>
     <label class="fld xl" for="b-steps"><input id="b-steps" type="text" inputmode="numeric" autocomplete="off" data-f="body-steps" value="${d.steps != null ? esc(String(d.steps)) : ""}" placeholder="0"><span class="u">de ${fmtInt(prof.stepsGoal || 8000)}</span></label>
     <div class="exf">${stepsAppBtn("pillbtn acc")}</div>
-    <p class="small">${d.stepsSrc === "iphone" ? "Llegaron solos desde el iPhone." : `Tocá el botón, mirá el número y volvé: este cuadro queda listo para escribirlo.${isIOS() ? (auto ? " Con el atajo de Ajustes llegan solos." : " En Ajustes → Pasos automáticos podés hacer que lleguen solos.") : ""}`}</p></div>`;
+    <p class="small">${d.stepsSrc === "iphone" ? "Llegaron solos desde el iPhone." : d.stepsSrc === "hc" ? "Llegaron solos desde Health Connect. Si escribís otro número, se reemplaza en la próxima sincronización." : `Tocá el botón, mirá el número y volvé: este cuadro queda listo para escribirlo.${isIOS() ? (auto ? " Con el atajo de Ajustes llegan solos." : " En Ajustes → Pasos automáticos podés hacer que lleguen solos.") : ""}`}</p></div>`;
 }
 function secWeight(p, d) {
   const ws = weightStats(p, S.date), lastWaist = dailyOf(p).filter(r => r.waist != null && r.date <= S.date).pop();
@@ -1660,25 +1665,36 @@ function viewSettings() {
   </div>`;
 }
 function stepsSettings(p) {
-  const copyRow = (id, v) => `<div class="copyrow"><code id="${id}">${esc(v)}</code><button type="button" class="ghost" data-act="copy" data-src="${id}" data-free>Copiar</button></div>`;
-  const app = stepsApp();
-  let body = `<p class="small">${isIOS() ? "El iPhone puede mandar los pasos de Salud a la app solo, todas las noches, con la app Atajos." : "Ninguna app web puede leer Samsung Health. Lo más rápido: tocá el botón, mirá el número y escribilo en el cuadro de pasos, que se abre solo al volver."}</p><div class="exf">${stepsAppBtn("ghost")}</div>`;
-  if (S.mode !== "db") return `<section class="card g"><h2>Pasos</h2>${body}<p class="small">Los pasos automáticos del iPhone necesitan la cuenta compartida.</p></section>`;
+  const C = window.GYM_CONFIG || {};
+  const copyRow = (id, v, label) => `${label ? `<span class="small"><b>${label}</b></span>` : ""}<div class="copyrow"><code id="${id}">${esc(v)}</code><button type="button" class="ghost" data-act="copy" data-src="${id}" data-free>Copiar</button></div>`;
+  const head = `<section class="card g"><h2>Pasos y salud automáticos</h2><p class="small">${isIOS() ? "El iPhone puede mandar los datos de Salud a la app solo, con la app Atajos." : "Samsung Health comparte tus datos con Health Connect, y la app HC Webhook los manda a Gym de a Dos: pasos, calorías, peso, grasa, sueño, pulso, ejercicio y glucosa."}</p><div class="exf">${stepsAppBtn("ghost")}</div>`;
+  if (S.mode !== "db") return `${head}<p class="small">Los datos automáticos necesitan la cuenta compartida.</p></section>`;
   const tok = S.docs["settings/steps"] && S.docs["settings/steps"].token;
-  body += `<h3 style="font-size:15px;margin-top:4px">Pasos automáticos desde el iPhone</h3>`;
-  if (!tok) return `<section class="card g"><h2>Pasos</h2>${body}<p class="small">Primero creá una clave. Sirve para que el atajo pueda guardar pasos sin iniciar sesión, y solo eso.</p><div><button type="button" class="pillbtn acc" data-act="steps-token" data-write>Crear clave del atajo</button></div></section>`;
-  return `<section class="card g"><h2>Pasos</h2>${body}
+  if (!tok) return `${head}<p class="small">Primero creá una clave. Sirve para que Atajos o HC Webhook puedan guardar datos sin iniciar sesión, y solo eso.</p><div><button type="button" class="pillbtn acc" data-act="steps-token" data-write>Crear clave</button></div></section>`;
+  const android = `<details class="howto"${isIOS() ? "" : " open"}><summary>Android · Health Connect con HC Webhook</summary>
+    <ol class="how"><li>En <b>Samsung Health</b> → menú ⋮ → <b>Configuración</b> → <b>Health Connect</b>, dejá activado compartir pasos, peso, sueño y lo demás.</li>
+      <li>Abrí <b>HC Webhook</b> y dale permiso de lectura a: Pasos, Calorías activas, Peso, Grasa corporal, Sueño, Frecuencia cardíaca en reposo, Ejercicio y Glucosa en sangre.</li>
+      <li>En <b>Webhooks</b> agregá esta dirección, formato <b>JSON</b>:</li></ol>
+    ${copyRow("hc-url", C.supabaseUrl + "/rest/v1/rpc/recibir_salud")}
+    <ol class="how" start="4"><li>En ese webhook agregá tres <b>encabezados personalizados</b> (nombre y valor):</li></ol>
+    ${copyRow("hc-h1", "apikey", "Encabezado 1 · nombre")}${copyRow("hc-v1", C.supabaseAnonKey || "", "Encabezado 1 · valor")}
+    ${copyRow("hc-h2", "x-clave", "Encabezado 2 · nombre")}${copyRow("hc-v2", tok, "Encabezado 2 · valor")}
+    ${copyRow("hc-h3", "x-persona", "Encabezado 3 · nombre")}${copyRow("hc-v3", p, "Encabezado 3 · valor")}
+    <ol class="how" start="5"><li>Sincronización: <b>Intervalo</b> de 30 minutos. Tocá <b>Sync now</b> para probar: los datos aparecen en la app en segundos.</li></ol>
+    <p class="small">El encabezado <b>x-persona</b> dice de quién son los datos: en el teléfono de Rocío va <b>rocio</b>. Si usás reloj, no se cuentan pasos dos veces: la app toma el contador que más pasos tenga.</p></details>`;
+  const ios = `<details class="howto"${isIOS() ? " open" : ""}><summary>iPhone · Salud con Atajos</summary>
     <ol class="how"><li>Abrí <b>Atajos</b> → pestaña <b>Automatización</b> → <b>Nueva automatización</b> → <b>Hora del día</b>: 23:00, <b>Diariamente</b>, y elegí <b>Ejecutar inmediatamente</b>.</li>
       <li>Agregá <b>Buscar muestras de Salud</b>: tipo <b>Pasos</b>, fecha de inicio <b>hoy</b>.</li>
       <li>Agregá <b>Calcular estadísticas</b> con <b>Suma</b>, y después <b>Redondear número</b>.</li>
       <li>Agregá <b>Obtener contenido de URL</b> con esta dirección:</li></ol>
-    ${copyRow("st-url", (window.GYM_CONFIG || {}).supabaseUrl + "/rest/v1/rpc/registrar_pasos")}
+    ${copyRow("st-url", C.supabaseUrl + "/rest/v1/rpc/registrar_pasos")}
     <ol class="how" start="5"><li>Tocá <b>Mostrar más</b>: método <b>POST</b>. En <b>Encabezados</b> agregá <b>apikey</b> con este valor:</li></ol>
-    ${copyRow("st-key", (window.GYM_CONFIG || {}).supabaseAnonKey || "")}
+    ${copyRow("st-key", C.supabaseAnonKey || "")}
     <ol class="how" start="6"><li>En <b>Cuerpo de la solicitud</b> elegí <b>JSON</b> y agregá tres campos: <b>clave</b> (texto) con este valor,</li></ol>
     ${copyRow("st-tok", tok)}
     <ol class="how" start="7"><li><b>persona</b> (texto): <b>${p}</b>, y <b>pasos</b> (número): el <b>Número redondeado</b>.</li><li>Tocá ▶ para probarlo: los pasos aparecen en la app al instante.</li></ol>
-    <p class="small">Con el iPhone bloqueado, iOS a veces no deja leer Salud y el atajo falla esa noche: elegí un horario en que suela usar el teléfono. Si usa Apple Watch, filtrá las muestras para que el origen sea solo el iPhone, así no se cuentan dos veces.</p></section>`;
+    <p class="small">Con el iPhone bloqueado, iOS a veces no deja leer Salud y el atajo falla esa noche: elegí un horario en que suela usar el teléfono. Si usa Apple Watch, filtrá las muestras para que el origen sea solo el iPhone.</p></details>`;
+  return `${head}${isIOS() ? ios + android : android + ios}</section>`;
 }
 function routineEdit(fn) {
   const p = S.person, R = clone(routine(p));
