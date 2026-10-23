@@ -636,7 +636,7 @@ const FOODS_DEF = [
 const PROFILE_DEFAULTS = {
   braian: { height: null, stepsGoal: 10000, waterGoal: 2, bottle: 1, glucose: false, glu: GLU_DEF,
     goalWeight: 75, goalWaist: 87, goalBf: 15, protGoal: 160, kcalGoal: 2250, foods: FOODS_DEF,
-    supps: [ { id: "proteina", name: "Proteína whey", dose: "1 scoop", when: "Día", active: true, p: 24, k: 120 },
+    supps: [ { id: "proteina", name: "Whey Gold Nutrition", dose: "1 scoop · 35 g", when: "Día", active: true, p: 28, k: 135 },
              { id: "creatina", name: "Creatina", dose: "5 g", when: "Día", active: false },
              { id: "magnesio", name: "Cloruro de magnesio", dose: "", when: "Noche", active: true } ] },
   rocio: { height: null, stepsGoal: 8000, waterGoal: 2, bottle: 1, glucose: true, glu: GLU_DEF, supps: [],
@@ -694,8 +694,9 @@ const FOOD_DB = [
 FOOD_DB.forEach(c => { c.it = c.it.map(([n, por, p, k], i) => ({ id: c.id + "-" + i, n, por, p, k })); });
 const FOOD_ALL = FOOD_DB.flatMap(c => c.it);
 // Proteína y calorías por defecto de los suplementos (perfiles guardados antes de que existieran estos campos)
-const SUPP_NUTR = { proteina: { p: 24, k: 120 } };
-const suppNutr = s => s.p != null || s.k != null ? { p: +s.p || 0, k: +s.k || 0 } : SUPP_NUTR[s.id] || { p: 0, k: 0 };
+// Whey Gold Nutrition White Series: scoop de 35 g = 28 g de proteína y 135 kcal (24/120 era el valor anterior estimado)
+const SUPP_NUTR = { proteina: { p: 28, k: 135 } };
+const suppNutr = s => (s.p != null || s.k != null) && !(s.id === "proteina" && +s.p === 24 && +s.k === 120) ? { p: +s.p || 0, k: +s.k || 0 } : SUPP_NUTR[s.id] || { p: 0, k: 0 };
 const fold = x => String(x).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const SUPP_WHEN = ["Mañana", "Día", "Post-entreno", "Noche"];
 const GLU_CTX = [["fast", "Ayunas"], ["meal", "Antes de comer"], ["post1", "1 h después de comer"], ["post", "2 h después de comer"],
