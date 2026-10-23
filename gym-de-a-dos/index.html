@@ -1189,7 +1189,8 @@ function insights(p) {
   if (days.length) {
     const wk = weekDone(p), idx = (parseIso(t).getDay() + 6) % 7;
     const missed = days.filter(x => x.wd != null && (x.wd + 6) % 7 < idx && !wk.has(x.id));
-    out.push({ cls: missed.length ? "warn" : "good", txt: `Entrenaste ${wk.size} de ${days.length} días esta semana${missed.length ? `; quedó pendiente ${missed.map(x => x.label).join(" y ")}` : ""}.` });
+    const ws0 = weekStart(t), why = id => { const x = sessionsOf(p).find(q => q.day === id && q.date >= ws0 && q.date <= t && q.skip); return x ? ` (${(SKIP_NAME[x.skip.why] || "otro motivo").toLowerCase()})` : ""; };
+    out.push({ cls: missed.length ? "warn" : "good", txt: `Entrenaste ${wk.size} de ${days.length} días esta semana${missed.length ? `; quedó pendiente ${missed.map(x => x.label + why(x.id)).join(" y ")}` : ""}.` });
   }
   const st = w7.filter(r => r.steps != null).map(r => r.steps);
   if (st.length >= 2) { const a = mean(st), g = prof.stepsGoal || 8000; out.push({ cls: a >= g ? "good" : "warn", txt: a >= g ? `Pasos: promediás ${fmtInt(a)} por día, arriba de tu meta.` : `Pasos: promediás ${fmtInt(a)} por día, ${fmtInt(g - a)} menos que tu meta de ${fmtInt(g)}.` }); }
@@ -1259,6 +1260,8 @@ function weekFactors(p) {
 function perfCauses(p, c, F) {
   const prof = profile(p), down = c.items.filter(x => x.kind === "downL" || x.kind === "downR").length, up = c.items.filter(x => x.kind === "upL" || x.kind === "upR").length, out = [];
   const h = m => `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
+  const ws0 = weekStart(today()), skips = sessionsOf(p).filter(x => x.skip && x.date >= ws0);
+  if (skips.length) out.push({ cls: "info", txt: `Faltaste ${skips.length === 1 ? "a 1 entreno" : `a ${skips.length} entrenos`} esta semana (${skips.map(x => (SKIP_NAME[x.skip.why] || "otro motivo").toLowerCase()).join(", ")}).${skips.some(x => x.skip.why === "enfermo" || x.skip.why === "dolor") ? " Después de estar enfermo o con dolor es normal rendir menos unos días: volvé con cargas un poco más bajas." : ""}` });
   if (down) {
     if (F.sleep.now != null && (F.sleep.now < 420 || (F.sleep.before != null && F.sleep.now < F.sleep.before - 30))) out.push({ cls: "warn", txt: `Dormiste ${h(F.sleep.now)} por noche${F.sleep.before != null ? ` (antes ${h(F.sleep.before)})` : ""}. Con menos de 7 h bajan la fuerza y las repeticiones.` });
     if (F.prot.now != null && prof.protGoal && F.prot.now < prof.protGoal * 0.85) out.push({ cls: "warn", txt: `Comiste ${Math.round(F.prot.now)} g de proteína por día, por debajo de tu meta de ${prof.protGoal} g. La proteína es la que repara el músculo entre sesiones.` });
@@ -1449,7 +1452,9 @@ function heroSlides(p, prof, d) {
   const wd = parseIso(S.date).getDay(), day = days.find(x => x.wd === wd);
   if (day) {
     const sm = sessSummary(day, S.docs[sessPath(p, S.date, day.id)]);
-    if (finished(sm, S.docs[sessPath(p, S.date, day.id)])) out.push({ t: `¡${esc(day.label)} realizada!`, b: `Hiciste ${sm.done} series y movilizaste ${fmtInt(sm.vol)} kg. Ahora toca comer bien y descansar.`, btn: ["Ver sesión", "go-train", day.id] });
+    const sk = (S.docs[sessPath(p, S.date, day.id)] || {}).skip;
+    if (sk && !sm.done) out.push({ t: `Faltaste a ${esc(day.label)}`, b: `${esc(skipTxt(sk))}. No pasa nada: lo importante es retomar en el próximo entreno.`, btn: ["Ver", "go-train", day.id] });
+    else if (finished(sm, S.docs[sessPath(p, S.date, day.id)])) out.push({ t: `¡${esc(day.label)} realizada!`, b: `Hiciste ${sm.done} series y movilizaste ${fmtInt(sm.vol)} kg. Ahora toca comer bien y descansar.`, btn: ["Ver sesión", "go-train", day.id] });
     else if (sm.done > 0) out.push({ t: `${esc(day.label)} en curso`, b: `Llevás ${sm.done} de ${sm.planned} series. Seguí donde la dejaste.`, btn: ["Seguir", "go-train", day.id] });
     else out.push({ t: `${isToday ? "Hoy toca" : "Tocaba"} ${esc(day.label)}`, b: `${day.ex.length} ejercicios y ${sm.planned} series.${prof.glucose ? " Medí la glucosa antes de empezar." : ""}`, btn: [isToday ? "Empezar" : "Cargar", "go-train", day.id] });
   } else {
@@ -1474,7 +1479,8 @@ function cardTrainToday(p, prof) {
     return vc("v-purple", isToday ? "Entreno de hoy" : "Entreno", ART.star(), `<div class="v">Descanso</div><p class="s">${nx ? `Lo próximo: ${esc(nx.label)}. ` : ""}Caminar también suma.</p>`, nx ? `data-act="go-train" data-id="${esc(nx.id)}"` : "", true, "Abrir el próximo entreno");
   }
   const sm = sessSummary(day, S.docs[sessPath(p, S.date, day.id)]);
-  const st = finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? `Realizada ✓ · ${sm.done} series · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${day.ex.length} ejercicios · ${sm.planned} series`;
+  const sk = (S.docs[sessPath(p, S.date, day.id)] || {}).skip;
+  const st = sk && !sm.done ? `Faltaste · ${skipTxt(sk)}` : finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? `Realizada ✓ · ${sm.done} series · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${day.ex.length} ejercicios · ${sm.planned} series`;
   return vc("v-blue", isToday ? "Entreno de hoy" : `Entreno del ${WDL[parseIso(S.date).getDay()]}`, ART.dumbbell(),
     `<div class="v">${esc(day.label)}</div><p class="s">${esc(st)}${day.focus ? " · " + esc(day.focus) : ""}</p>`, `data-act="go-train" data-id="${esc(day.id)}"`, true, `Abrir ${day.label}`);
 }
@@ -1636,6 +1642,7 @@ function viewTrain() {
     <div class="days g" role="group" aria-label="Día de rutina">${chips}</div>
     ${spotifyCard()}
     <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}</h2><p>${day.focus ? esc(day.focus) + " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
+    ${skipCard(sess, sum)}
     ${prof.glucose ? preGluCard(p, prof) : ""}
     ${day.ex.length ? day.ex.map(ex => exCard(p, day, ex, sess, path)).join("") : `<div class="empty g"><b>Este día no tiene ejercicios.</b>Sumalos en Ajustes.</div>`}
     <label class="note card g" for="sess-note"><span class="eyebrow">Notas de la sesión</span><textarea id="sess-note" data-f="sess-note" placeholder="Cómo te sentiste, molestias, cambios de máquina…">${esc(sess && sess.note || "")}</textarea></label>
@@ -1649,6 +1656,20 @@ function preGluCard(p, prof) {
     return `<section class="card g"><div class="row"><div><span class="eyebrow">Glucosa antes de entrenar · ${esc(pre.t)}</span><div class="bignum">${pre.v}<small>mg/dL</small></div></div><span class="chip ${a.cls}">${a.short}</span></div><p class="advice ${a.cls}">${esc(a.txt)}</p></section>`; }
   return `<section class="card g"><span class="eyebrow">Glucosa antes de entrenar</span>
     <div class="row2"><label class="fld" for="pre-glu"><input id="pre-glu" type="text" inputmode="numeric" autocomplete="off" data-f="pre-glu" value="${esc(S.preDraft)}" placeholder="Medila antes de empezar"><span class="u">mg/dL</span></label><button type="button" class="pillbtn acc" data-act="glu-pre" data-write>Guardar</button></div></section>`;
+}
+// Faltar a un entreno: motivo y nota, para tenerlo en cuenta en los resúmenes
+const SKIP_WHY = [["enfermo", "Estaba enfermo/a"], ["dolor", "Dolor o lesión"], ["trabajo", "Trabajo o estudio"], ["cansancio", "Cansancio"], ["viaje", "Viaje"], ["compromiso", "Compromiso"], ["clima", "Clima"], ["otro", "Otro motivo"]];
+const SKIP_NAME = Object.fromEntries(SKIP_WHY);
+const skipTxt = k => (k && k.why ? SKIP_NAME[k.why] || "Otro motivo" : "") + (k && k.note ? ` · ${k.note}` : "");
+function skipCard(sess, sum) {
+  if (sess && sess.skip) return `<section class="card g skipc" aria-label="Faltaste a este entreno"><div class="row"><h2>Faltaste a este entreno</h2><button type="button" class="ghost" data-act="skip-undo" data-write>Deshacer</button></div><p class="small">${esc(skipTxt(sess.skip))}</p></section>`;
+  if (sum.done > 0 || (sess && sess.done)) return "";
+  if (!S.skipOpen) return `<div class="exf"><button type="button" class="ghost" data-act="skip-open" data-write>Falté a este entreno</button></div>`;
+  const why = S.skipWhy || "";
+  return `<section class="card g skipc" aria-label="Por qué faltaste"><h2>¿Por qué faltaste?</h2>
+    <div class="ctxs" role="group" aria-label="Motivo">${SKIP_WHY.map(([k, n]) => `<button type="button" data-act="skip-why" data-k="${k}" aria-pressed="${k === why}">${n}</button>`).join("")}</div>
+    <label class="lbl" for="skip-n">Nota<input class="tin" id="skip-n" data-f="skip-note" value="${esc(S.skipNote || "")}" placeholder="Opcional: qué pasó" autocomplete="off"></label>
+    <div class="exf"><button type="button" class="pillbtn acc" data-act="skip-save" data-write>Guardar</button><button type="button" class="ghost" data-act="skip-cancel">Cancelar</button></div></section>`;
 }
 const sumHtml = s => `<span>Series <b>${s.done}/${s.planned}</b></span><span>Volumen <b>${fmtInt(s.vol)} kg</b></span>${s.min ? `<span>Cardio <b>${fmtN(s.min)} min</b></span>` : ""}`;
 function rowsCount(ex, en) { return en && en.rows ? en.rows : Math.max(ex.sets || 1, (en && en.sets && en.sets.length) || 0); }
@@ -2169,6 +2190,15 @@ function bind() {
     else if (a === "glu-del") { const id = b.dataset.id; editDaily(S.person, S.date, d => { d.glucose = (d.glucose || []).filter(g => g.id !== id); if (!d.glucose.length) delete d.glucose; }, 200); render(); }
     else if (a === "add-set" || a === "rm-set" || a === "repeat") exAction(a, b.dataset.ex);
     else if (a === "del-sess") { S.confirm = "del-sess"; render(); }
+    else if (a === "skip-open") { S.skipOpen = true; S.skipWhy = ""; S.skipNote = ""; render(); }
+    else if (a === "skip-cancel") { S.skipOpen = false; render(); }
+    else if (a === "skip-why") { S.skipWhy = b.dataset.k; render(); }
+    else if (a === "skip-save" || a === "skip-undo") {
+      const p = S.person, day = curDay(), path = sessPath(p, S.date, day.id), x = sessForEdit(path, p, day);
+      if (a === "skip-save") { if (!S.skipWhy) { toast("Elegí un motivo"); return; } x.skip = { why: S.skipWhy, note: (S.skipNote || "").trim(), at: Date.now() }; S.skipOpen = false; toast("Anotado"); }
+      else delete x.skip;
+      x.dayLabel = day.label; x.updated = Date.now(); writeDoc(path, x, 150); render();
+    }
     else if (a === "finish") {
       const p = S.person, day = curDay(), path = sessPath(p, S.date, day.id), s = sessForEdit(path, p, day), on = b.dataset.v === "1";
       if (on) { s.done = true; s.doneAt = Date.now(); } else { delete s.done; delete s.doneAt; }
@@ -2210,6 +2240,7 @@ function bind() {
     if (f === "glu-t") { S.gluTime = t.value; return; }
     if (f === "pre-glu") { S.preDraft = t.value; return; }
     if (f === "glu-note") { S.gluNote = t.value; return; }
+    if (f === "skip-note") { S.skipNote = t.value; return; }
     if (f === "food-n" || f === "food-p" || f === "food-k") { S.foodDraft[f.slice(5)] = t.value; return; }
     if (!S.canWrite) return;
     if (f === "w" || f === "r" || f === "min" || f === "km") { const row = t.closest(".set"); if (row) editSet(row, f, t.value); }
