@@ -387,6 +387,7 @@ select.tin{appearance:auto}
 
 /* Ajustes */
 details.howto{border-top:1px solid var(--line); padding-top:10px}
+.perfh{font-family:var(--f-body); font-size:14.5px; font-weight:700; margin-top:4px}
 .pbar{height:7px; border-radius:99px; background:var(--fill-2); overflow:hidden}
 .pbar i{display:block; height:100%; border-radius:inherit; background:var(--accent)}
 .pbar.big{height:10px}
@@ -1215,6 +1216,99 @@ function insights(p) {
   prof.supps.filter(x => x.active).forEach(x => { const n = w7.filter(r => r.supps && r.supps[x.id]).length; if (n < 5) out.push({ cls: "warn", txt: `${x.name}: lo tomaste ${n} de 7 días.` }); });
   return out;
 }
+/* --- Rendimiento: esta semana contra la anterior, con posibles causas --- */
+function exPerf(type, en) {
+  const ss = (en.sets || []).filter(x => x.r != null); if (!ss.length || type === "cardio") return null;
+  let top = null, topR = 0;
+  for (const x of ss) { const v = chartValue(type, x, en.bar); const w = v == null ? 0 : v; if (top == null || w > top || (w === top && x.r > topR)) { top = w; topR = x.r; } }
+  return { top, topR, reps: ss.reduce((a, x) => a + x.r, 0), vol: entryVolume(type, en) };
+}
+function trainCompare(p) {
+  const t = today(), ws = weekStart(t), pws = addDays(ws, -7), upto = addDays(pws, dayNum(t) - dayNum(ws));
+  const all = sessionsOf(p).filter(sessionFilled).sort((a, b) => a.date < b.date ? -1 : 1);
+  const tot = L => L.reduce((a, x) => { for (const en of Object.values(x.entries || {})) { const f = exPerf(en.type, en); if (f) { a.vol += f.vol; a.reps += f.reps; } } return a; }, { vol: 0, reps: 0 });
+  const now = tot(all.filter(x => x.date >= ws && x.date <= t)), before = tot(all.filter(x => x.date >= pws && x.date <= upto));
+  // Cada ejercicio de esta semana contra la vez anterior que se hizo
+  const last = {};
+  all.filter(x => x.date >= ws && x.date <= t).forEach(x => Object.entries(x.entries || {}).forEach(([k, en]) => { if (exPerf(en.type, en)) last[k] = { date: x.date, en }; }));
+  const items = [];
+  for (const [k, cur] of Object.entries(last)) {
+    let prev = null;
+    all.filter(x => x.date < cur.date).forEach(x => { const en = x.entries && x.entries[k]; if (en && exPerf(en.type, en)) prev = { date: x.date, en }; });
+    if (!prev) continue;
+    const a = exPerf(cur.en.type, cur.en), b = exPerf(prev.en.type, prev.en), dT = Math.round((a.top - b.top) * 100) / 100, dR = a.reps - b.reps;
+    const kind = dT > 0 ? "upL" : dT < 0 ? "downL" : dR > 0 ? "upR" : dR < 0 ? "downR" : "same";
+    items.push({ k, name: cur.en.name || k, type: cur.en.type, a, b, dT, dR, kind, da: cur.date, db: prev.date });
+  }
+  return { now, before, items, ws, pws };
+}
+function weekFactors(p) {
+  const prof = profile(p), t = today(), ws = weekStart(t), pws = addDays(ws, -7), rows = dailyOf(p);
+  const avg = (from, to, f) => { const xs = rows.filter(r => r.date >= from && r.date <= to).map(f).filter(v => v != null && v !== 0 && !isNaN(v)); return xs.length ? mean(xs) : null; };
+  const pair = f => ({ now: avg(ws, t, f), before: avg(pws, addDays(ws, -1), f) });
+  const F = {
+    sleep: pair(r => r.sleepMin), prot: pair(r => r.food && r.food.length ? foodTot(r).p : null), kcal: pair(r => r.food && r.food.length ? foodTot(r).k : null),
+    steps: pair(r => r.steps), water: pair(r => r.water), weight: pair(r => r.weight)
+  };
+  if (prof.glucose) {
+    F.glu = pair(r => r.glucose && r.glucose.length ? mean(r.glucose.map(x => x.v)) : null);
+    F.preLow = rows.filter(r => r.date >= ws && r.date <= t).reduce((a, r) => a + (r.glucose || []).filter(x => x.ctx === "pre" && x.v < 90).length, 0);
+  }
+  return F;
+}
+function perfCauses(p, c, F) {
+  const prof = profile(p), down = c.items.filter(x => x.kind === "downL" || x.kind === "downR").length, up = c.items.filter(x => x.kind === "upL" || x.kind === "upR").length, out = [];
+  const h = m => `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
+  if (down) {
+    if (F.sleep.now != null && (F.sleep.now < 420 || (F.sleep.before != null && F.sleep.now < F.sleep.before - 30))) out.push({ cls: "warn", txt: `Dormiste ${h(F.sleep.now)} por noche${F.sleep.before != null ? ` (antes ${h(F.sleep.before)})` : ""}. Con menos de 7 h bajan la fuerza y las repeticiones.` });
+    if (F.prot.now != null && prof.protGoal && F.prot.now < prof.protGoal * 0.85) out.push({ cls: "warn", txt: `Comiste ${Math.round(F.prot.now)} g de proteína por día, por debajo de tu meta de ${prof.protGoal} g. La proteína es la que repara el músculo entre sesiones.` });
+    if (F.kcal.now != null && prof.kcalGoal && F.kcal.now < prof.kcalGoal - 300) out.push({ cls: "warn", txt: `Comiste unas ${fmtInt(F.kcal.now)} kcal por día, bastante debajo de tu meta de ${fmtInt(prof.kcalGoal)}. Un déficit muy grande deja menos energía para entrenar.` });
+    if (F.weight.now != null && F.weight.before != null && F.weight.before - F.weight.now > F.weight.before * 0.01) out.push({ cls: "warn", txt: `Bajaste ${fmtN(Math.round((F.weight.before - F.weight.now) * 10) / 10)} kg en una semana. Bajar más del 1 % del peso por semana suele costar fuerza y músculo.` });
+    if (F.steps.now != null && F.steps.before != null && F.steps.now > F.steps.before * 1.4 && F.steps.now > 12000) out.push({ cls: "info", txt: `Caminaste mucho más que la semana anterior (${fmtInt(F.steps.now)} contra ${fmtInt(F.steps.before)} pasos por día): las piernas llegan más cansadas.` });
+    if (F.water.now != null && F.water.now < (prof.waterGoal || 2) * 0.75) out.push({ cls: "info", txt: `Tomaste ${fmtN(Math.round(F.water.now * 10) / 10)} L de agua por día. Con poca hidratación rinde menos el músculo.` });
+    if (F.preLow) out.push({ cls: "warn", txt: `Entrenaste ${F.preLow} ${F.preLow === 1 ? "vez" : "veces"} con la glucosa por debajo de 90. Con la glucosa baja cae la energía y conviene comer algo antes.` });
+    if (!out.length) out.push({ cls: "info", txt: "En tus datos no aparece una causa clara: puede ser un mal día, estrés o cansancio acumulado. Si baja dos semanas seguidas, hacé una semana más liviana (menos series) para recuperar." });
+  }
+  if (up) {
+    out.push({ cls: "good", txt: "Estás progresando: subir de a poco la carga o las repeticiones es lo que hace crecer el músculo." });
+    if (PEOPLE[p].lossIsGood) out.push({ cls: "good", txt: "Mantener o subir cargas mientras bajás de peso es la mejor señal de que estás conservando músculo." });
+    if (F.sleep.now != null && F.sleep.before != null && F.sleep.now > F.sleep.before + 20) out.push({ cls: "good", txt: `Dormiste más que la semana anterior (${h(F.sleep.now)} contra ${h(F.sleep.before)}): ayuda a recuperar.` });
+    if (F.prot.now != null && prof.protGoal && F.prot.now >= prof.protGoal * 0.9) out.push({ cls: "good", txt: `Llegaste a la proteína (${Math.round(F.prot.now)} g por día).` });
+  }
+  return out;
+}
+function cardPerf(p) {
+  const c = trainCompare(p);
+  const n = k => c.items.filter(x => x.kind === k).length, upL = n("upL"), upR = n("upR"), dn = n("downL") + n("downR");
+  const head = `<section class="card g" aria-label="Rendimiento"><div class="row"><h2>Rendimiento</h2><span class="small">contra la semana pasada</span></div>`;
+  if (!c.items.length && !c.before.vol) return `${head}<p class="small">Cuando repitas ejercicios de una semana a otra, acá vas a ver si subiste carga o repeticiones, y por qué.</p></section>`;
+  const ej = n => `${n} ${n === 1 ? "ejercicio" : "ejercicios"}`;
+  const parts = [upL ? `más carga en ${ej(upL)}` : "", upR ? `más repeticiones en ${ej(upR)}` : "", dn ? `menos en ${ej(dn)}` : ""].filter(Boolean);
+  const pv = c.before.vol ? Math.round((c.now.vol - c.before.vol) / c.before.vol * 100) : null;
+  let html = `${head}<p>${parts.length ? `Esta semana: ${parts.join(", ").replace(/, ([^,]*)$/, " y $1")}.` : "Esta semana igualaste lo de la vez anterior."}</p>
+    <p class="small">Volumen: ${fmtInt(c.now.vol)} kg${c.before.vol ? ` contra ${fmtInt(c.before.vol)} kg la semana pasada a esta altura (${pv >= 0 ? "+" : "−"}${Math.abs(pv)} %)` : ""}.</p>
+    <div class="exf">${upL ? `<span class="chip good">↑ carga ${upL}</span>` : ""}${upR ? `<span class="chip good">↑ reps ${upR}</span>` : ""}${dn ? `<span class="chip warn">↓ ${dn}</span>` : ""}<button type="button" class="ghost" data-act="perf-toggle" data-free aria-expanded="${!!S.perfOpen}">${S.perfOpen ? "Ver menos" : "Ver más"}</button></div>`;
+  if (S.perfOpen) {
+    const F = weekFactors(p), causes = perfCauses(p, c, F);
+    const fmtSet = (x, f) => `${fmtN(f.top)} kg${x.type === "mancuerna" ? " c/u" : x.type === "discos" ? " x lado" : ""} × ${f.topR}`;
+    const lbl = { upL: ["good", "↑ carga"], upR: ["good", "↑ reps"], downL: ["warn", "↓ carga"], downR: ["warn", "↓ reps"], same: ["", "igual"] };
+    html += `<h3 class="perfh">Ejercicio por ejercicio</h3><div class="plist">${c.items.map(x => `<div class="prow"><span class="d">${esc(x.name)}</span><span class="chip ${lbl[x.kind][0]}">${lbl[x.kind][1]}</span><span class="ss">${fmtShort(x.db)}: ${fmtSet(x, x.b)} · ${x.b.reps} reps → ${fmtShort(x.da)}: <b>${fmtSet(x, x.a)}</b> · ${x.a.reps} reps</span></div>`).join("") || `<p class="small">Todavía no repetiste ejercicios esta semana.</p>`}</div>`;
+    const h = m => m == null ? "—" : `${Math.floor(m / 60)} h ${Math.round(m % 60)}`;
+    const rowF = (k, a, b) => `<div class="pm-row"><span>${k}</span><b>${a} <span class="muted">· antes ${b}</span></b></div>`;
+    const num = (v, f) => v == null ? "—" : f(v);
+    html += `<h3 class="perfh">Lo que cambió en tu semana</h3><div class="pm-sec">
+      ${rowF("Sueño por noche", h(F.sleep.now), h(F.sleep.before))}
+      ${rowF("Proteína por día", num(F.prot.now, v => Math.round(v) + " g"), num(F.prot.before, v => Math.round(v) + " g"))}
+      ${rowF("Calorías por día", num(F.kcal.now, fmtInt), num(F.kcal.before, fmtInt))}
+      ${rowF("Pasos por día", num(F.steps.now, fmtInt), num(F.steps.before, fmtInt))}
+      ${rowF("Agua por día", num(F.water.now, v => fmtN(Math.round(v * 10) / 10) + " L"), num(F.water.before, v => fmtN(Math.round(v * 10) / 10) + " L"))}
+      ${rowF("Peso promedio", num(F.weight.now, v => fmtN(Math.round(v * 10) / 10) + " kg"), num(F.weight.before, v => fmtN(Math.round(v * 10) / 10) + " kg"))}
+      ${F.glu ? rowF("Glucosa promedio", num(F.glu.now, v => Math.round(v) + ""), num(F.glu.before, v => Math.round(v) + "")) : ""}</div>
+      <h3 class="perfh">Posibles causas</h3>${causes.length ? `<ul class="ins">${causes.map(x => `<li class="${x.cls}"><i></i><span>${esc(x.txt)}</span></li>`).join("")}</ul>` : `<p class="small">Sin cambios para explicar.</p>`}
+      <p class="small">Se arma con tus registros y con lo que muestran los estudios de entrenamiento: dormir poco, comer poca proteína, un déficit grande, deshidratarse o bajar de peso muy rápido restan fuerza; dormir bien, comer suficiente y progresar de a poco la suman. Es una orientación, no un diagnóstico.</p>`;
+  }
+  return html + `</section>`;
+}
 function cardInsights(p) {
   const L = insights(p);
   return `<section class="card g" aria-label="Tu semana"><h2>Tu semana</h2>${L.length ? `<ul class="ins">${L.map(x => `<li class="${x.cls}"><i></i><span>${esc(x.txt)}</span></li>`).join("")}</ul>` : `<p class="small">Cargá datos unos días y acá aparece tu resumen con sugerencias.</p>`}</section>`;
@@ -1343,6 +1437,7 @@ function viewHome() {
       + waterCard(prof, d)
       + (hasSupps ? cardSupps(p, prof, d) : "")
       + cardWeek(p)
+      + cardPerf(p)
       + cardInsights(p);
   }
   let hide = false; try { hide = localStorage.getItem("gym-de-a-dos:hide-install") === "1"; } catch (e) {}
@@ -1670,7 +1765,7 @@ function historyOf(p, key) {
 }
 function viewProg() {
   const seg = `<div class="seg g" role="group" aria-label="Vista"><button type="button" data-act="prog-mode" data-m="ex" aria-pressed="${S.progMode === "ex"}">Ejercicios</button><button type="button" data-act="prog-mode" data-m="body" aria-pressed="${S.progMode === "body"}">Cuerpo y hábitos</button></div>`;
-  return `<div class="stack">${cardInsights(S.person)}${seg}${S.progMode === "ex" ? progExercises() : progBody()}</div>`;
+  return `<div class="stack">${cardInsights(S.person)}${cardPerf(S.person)}${seg}${S.progMode === "ex" ? progExercises() : progBody()}</div>`;
 }
 function progExercises() {
   const p = S.person, exs = allExercises(p);
@@ -2057,6 +2152,7 @@ function bind() {
     else if (a === "supp") { const id = b.dataset.id; editDaily(S.person, S.date, d => { d.supps = Object.assign({}, d.supps); if (d.supps[id]) delete d.supps[id]; else d.supps[id] = true; }, 300); render(); }
     else if (a === "glu-ctx") { S.gluCtx = b.dataset.c; renderSheet(); }
     else if (a === "glu-meal") { S.gluMeal = b.dataset.m; renderSheet(); }
+    else if (a === "perf-toggle") { S.perfOpen = !S.perfOpen; render(); }
     else if (a === "glu-range") { S.gluRange = +b.dataset.n; render(); }
     else if (a === "food-add") { const f = profile(S.person).foods.find(x => x.id === b.dataset.id); if (!f) return; editDaily(S.person, S.date, d => { d.food = (d.food || []).concat([{ id: uid(), n: f.n, p: f.p, k: f.k, t: nowHM() }]); }, 300); toast(`+${fmtN(f.p)} g de proteína`); render(); }
     else if (a === "food-del") { const id = b.dataset.id; editDaily(S.person, S.date, d => { d.food = (d.food || []).filter(f => f.id !== id); if (!d.food.length) delete d.food; }, 200); render(); }
