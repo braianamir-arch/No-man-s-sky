@@ -26,6 +26,100 @@ alter table public.salud_registros enable row level security;
 drop policy if exists "salud_select" on public.salud_registros;
 create policy "salud_select" on public.salud_registros for select to authenticated using (true);
 
+-- Total del día de un tipo acumulable (pasos, calorías) sin contar dos veces:
+-- si un registro queda dentro de otro más largo de la misma app (por ejemplo el total del día que se va
+-- actualizando), se usa solo el más largo; los registros que no se pisan se suman. Entre apps distintas
+-- (teléfono y reloj) se queda con la que más tiene.
+create or replace function public.salud_total(v_quien text, v_tipo text, d date)
+returns numeric
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with r as (
+    select coalesce(origen, '') o, inicio i, coalesce(fin, inicio) f, valor v
+      from public.salud_registros
+     where persona = v_quien and tipo = v_tipo
+       and (inicio at time zone 'America/Argentina/Buenos_Aires')::date = d
+  ), sueltos as (
+    select distinct on (o, i, f) o, v from r
+     where not exists (select 1 from r x where x.o = r.o and x.i <= r.i and x.f >= r.f and (x.i < r.i or x.f > r.f))
+     order by o, i, f, v desc
+  )
+  select max(t) from (select sum(v) t from sueltos group by o) y;
+$$;
+
+-- Recalcula el día de una persona a partir de los registros guardados y actualiza la app
+create or replace function public.salud_recalcular(v_quien text, d date)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  zona   text := 'America/Argentina/Buenos_Aires';
+  ruta   text;
+  doc    jsonb;
+  manual jsonb;
+  glu    jsonb;
+  pasos  numeric;
+  kcal   numeric;
+  peso   numeric;
+  grasa  numeric;
+  sueno  numeric;
+  pulso  numeric;
+  ejer   numeric;
+  ahora  bigint := (extract(epoch from now()) * 1000)::bigint;
+begin
+  pasos := public.salud_total(v_quien, 'steps', d);
+  kcal  := public.salud_total(v_quien, 'active_calories', d);
+  select valor into peso from public.salud_registros
+   where persona = v_quien and tipo = 'weight' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
+  select valor into grasa from public.salud_registros
+   where persona = v_quien and tipo = 'body_fat' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
+  select max(valor) into sueno from public.salud_registros
+   where persona = v_quien and tipo = 'sleep' and (fin at time zone zona)::date = d;
+  select valor into pulso from public.salud_registros
+   where persona = v_quien and tipo = 'resting_heart_rate' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
+  select sum(valor) into ejer from public.salud_registros
+   where persona = v_quien and tipo = 'exercise' and (inicio at time zone zona)::date = d;
+  select coalesce(jsonb_agg(jsonb_build_object('id', 'hc-' || rid, 't', to_char(inicio at time zone zona, 'HH24:MI'),
+                                               'v', valor::int, 'ctx', 'other', 'src', 'hc') order by inicio), '[]'::jsonb)
+    into glu from public.salud_registros
+   where persona = v_quien and tipo = 'blood_glucose' and (inicio at time zone zona)::date = d;
+
+  ruta := 'daily/' || v_quien || '_' || to_char(d, 'YYYY-MM-DD');
+  select data into doc from public.docs where path = ruta;
+  doc := coalesce(doc, jsonb_build_object('person', v_quien, 'date', to_char(d, 'YYYY-MM-DD')));
+
+  if pasos is not null then doc := doc || jsonb_build_object('steps', round(pasos)::int, 'stepsSrc', 'hc'); end if;
+  if kcal  is not null then doc := doc || jsonb_build_object('activeKcal', round(kcal)::int); end if;
+  -- El peso cargado a mano en la app tiene prioridad sobre el de la balanza
+  if peso  is not null and (doc->'weight' is null or doc->>'weightSrc' = 'hc') then
+    doc := doc || jsonb_build_object('weight', round(peso, 1), 'weightSrc', 'hc');
+  end if;
+  if grasa is not null then doc := doc || jsonb_build_object('bodyFat', round(grasa, 1)); end if;
+  if sueno is not null then doc := doc || jsonb_build_object('sleepMin', round(sueno / 60)::int); end if;
+  if pulso is not null then doc := doc || jsonb_build_object('restingHr', round(pulso)::int); end if;
+  if ejer  is not null then doc := doc || jsonb_build_object('exerciseMin', round(ejer / 60)::int); end if;
+  -- Glucosa: se conservan las mediciones cargadas a mano y se reemplazan las que vinieron del teléfono
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into manual
+    from jsonb_array_elements(coalesce(doc->'glucose', '[]'::jsonb)) e
+   where coalesce(e->>'src', '') <> 'hc';
+  if jsonb_array_length(glu) > 0 or jsonb_array_length(coalesce(doc->'glucose', '[]'::jsonb)) <> jsonb_array_length(manual) then
+    doc := jsonb_set(doc, '{glucose}', manual || glu);
+  end if;
+  doc := doc || jsonb_build_object('updated', ahora);
+
+  insert into public.docs (path, data, updated_at) values (ruta, doc, now())
+  on conflict (path) do update set data = excluded.data, updated_at = now();
+end;
+$$;
+
+revoke all on function public.salud_total(text, text, date) from public;
+revoke all on function public.salud_recalcular(text, date) from public;
+
 create or replace function public.recibir_salud(jsonb)
 returns jsonb
 language plpgsql
@@ -49,18 +143,6 @@ declare
   dias     date[] := '{}';
   d        date;
   n        int := 0;
-  ruta     text;
-  doc      jsonb;
-  manual   jsonb;
-  glu      jsonb;
-  pasos    numeric;
-  kcal     numeric;
-  peso     numeric;
-  grasa    numeric;
-  sueno    numeric;
-  pulso    numeric;
-  ejer     numeric;
-  ahora    bigint := (extract(epoch from now()) * 1000)::bigint;
 begin
   select data->>'token' into correcta from public.docs where path = 'settings/steps';
   if correcta is null or v_clave is distinct from correcta then
@@ -117,55 +199,7 @@ begin
 
   -- Recalcular cada día tocado (solo los últimos 60 días)
   for d in select distinct x from unnest(dias) x where x >= (now() at time zone zona)::date - 60 loop
-    -- Pasos y calorías: suma por app de origen y se queda con la mayor, para no contar dos veces teléfono y reloj
-    select max(s) into pasos from (
-      select sum(valor) s from public.salud_registros
-       where persona = v_quien and tipo = 'steps' and (inicio at time zone zona)::date = d
-       group by coalesce(origen, '')) x;
-    select max(s) into kcal from (
-      select sum(valor) s from public.salud_registros
-       where persona = v_quien and tipo = 'active_calories' and (inicio at time zone zona)::date = d
-       group by coalesce(origen, '')) x;
-    select valor into peso from public.salud_registros
-     where persona = v_quien and tipo = 'weight' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
-    select valor into grasa from public.salud_registros
-     where persona = v_quien and tipo = 'body_fat' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
-    select max(valor) into sueno from public.salud_registros
-     where persona = v_quien and tipo = 'sleep' and (fin at time zone zona)::date = d;
-    select valor into pulso from public.salud_registros
-     where persona = v_quien and tipo = 'resting_heart_rate' and (inicio at time zone zona)::date = d order by inicio desc limit 1;
-    select sum(valor) into ejer from public.salud_registros
-     where persona = v_quien and tipo = 'exercise' and (inicio at time zone zona)::date = d;
-    select coalesce(jsonb_agg(jsonb_build_object('id', 'hc-' || rid, 't', to_char(inicio at time zone zona, 'HH24:MI'),
-                                                 'v', valor::int, 'ctx', 'other', 'src', 'hc') order by inicio), '[]'::jsonb)
-      into glu from public.salud_registros
-     where persona = v_quien and tipo = 'blood_glucose' and (inicio at time zone zona)::date = d;
-
-    ruta := 'daily/' || v_quien || '_' || to_char(d, 'YYYY-MM-DD');
-    select data into doc from public.docs where path = ruta;
-    doc := coalesce(doc, jsonb_build_object('person', v_quien, 'date', to_char(d, 'YYYY-MM-DD')));
-
-    if pasos is not null then doc := doc || jsonb_build_object('steps', round(pasos)::int, 'stepsSrc', 'hc'); end if;
-    if kcal  is not null then doc := doc || jsonb_build_object('activeKcal', round(kcal)::int); end if;
-    -- El peso cargado a mano en la app tiene prioridad sobre el de la balanza
-    if peso  is not null and (doc->'weight' is null or doc->>'weightSrc' = 'hc') then
-      doc := doc || jsonb_build_object('weight', round(peso, 1), 'weightSrc', 'hc');
-    end if;
-    if grasa is not null then doc := doc || jsonb_build_object('bodyFat', round(grasa, 1)); end if;
-    if sueno is not null then doc := doc || jsonb_build_object('sleepMin', round(sueno / 60)::int); end if;
-    if pulso is not null then doc := doc || jsonb_build_object('restingHr', round(pulso)::int); end if;
-    if ejer  is not null then doc := doc || jsonb_build_object('exerciseMin', round(ejer / 60)::int); end if;
-    -- Glucosa: se conservan las mediciones cargadas a mano y se reemplazan las que vinieron del teléfono
-    select coalesce(jsonb_agg(e), '[]'::jsonb) into manual
-      from jsonb_array_elements(coalesce(doc->'glucose', '[]'::jsonb)) e
-     where coalesce(e->>'src', '') <> 'hc';
-    if jsonb_array_length(glu) > 0 or jsonb_array_length(coalesce(doc->'glucose', '[]'::jsonb)) <> jsonb_array_length(manual) then
-      doc := jsonb_set(doc, '{glucose}', manual || glu);
-    end if;
-    doc := doc || jsonb_build_object('updated', ahora);
-
-    insert into public.docs (path, data, updated_at) values (ruta, doc, now())
-    on conflict (path) do update set data = excluded.data, updated_at = now();
+    perform public.salud_recalcular(v_quien, d);
   end loop;
 
   return jsonb_build_object('ok', true, 'registros', n, 'dias', (select count(distinct x) from unnest(dias) x));
@@ -174,3 +208,9 @@ $$;
 
 revoke all on function public.recibir_salud(jsonb) from public;
 grant execute on function public.recibir_salud(jsonb) to anon, authenticated;
+
+-- Corrige los días que ya estaban guardados (por ejemplo, pasos sumados de más)
+select public.salud_recalcular(persona, dia)
+  from (select distinct persona, (inicio at time zone 'America/Argentina/Buenos_Aires')::date dia
+          from public.salud_registros
+         where inicio >= now() - interval '60 days') x;
