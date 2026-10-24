@@ -26,10 +26,14 @@ alter table public.salud_registros enable row level security;
 drop policy if exists "salud_select" on public.salud_registros;
 create policy "salud_select" on public.salud_registros for select to authenticated using (true);
 
--- Total del día de un tipo acumulable (pasos, calorías) sin contar dos veces:
--- si un registro queda dentro de otro más largo de la misma app (por ejemplo el total del día que se va
--- actualizando), se usa solo el más largo; los registros que no se pisan se suman. Entre apps distintas
--- (teléfono y reloj) se queda con la que más tiene.
+-- Total del día de un tipo acumulable (pasos, calorías) sin contar dos veces.
+-- 1. Si un registro queda dentro de otro más largo de la misma app (el total del día que se va actualizando),
+--    se usa solo el más largo.
+-- 2. Dentro de cada app, el día se corta en tramos según los inicios y finales de sus registros. En cada tramo
+--    se reparte cada registro según su duración y se toma el mayor, no la suma: así el teléfono y el reloj (que
+--    Samsung Health guarda con la misma app y con horarios que se pisan a medias) no se suman entre sí.
+--    Los registros sin duración (un instante) se suman aparte.
+-- 3. Entre apps distintas se queda con la que más tiene.
 create or replace function public.salud_total(v_quien text, v_tipo text, d date)
 returns numeric
 language sql
@@ -43,11 +47,24 @@ as $$
      where persona = v_quien and tipo = v_tipo
        and (inicio at time zone 'America/Argentina/Buenos_Aires')::date = d
   ), sueltos as (
-    select distinct on (o, i, f) o, v from r
+    select distinct on (o, i, f) o, i, f, v from r
      where not exists (select 1 from r x where x.o = r.o and x.i <= r.i and x.f >= r.f and (x.i < r.i or x.f > r.f))
      order by o, i, f, v desc
+  ), iv as (
+    select o, i, f, v / extract(epoch from f - i) ritmo from sueltos where f > i
+  ), cortes as (
+    select o, x, lead(x) over (partition by o order by x) y from (select o, i x from iv union select o, f from iv) c
+  ), tramos as (
+    select c.o, max(iv.ritmo) * extract(epoch from c.y - c.x) t
+      from cortes c join iv on iv.o = c.o and iv.i <= c.x and iv.f >= c.y
+     where c.y is not null
+     group by c.o, c.x, c.y
+  ), por_app as (
+    select o, sum(t) t from tramos group by o
+    union all
+    select o, sum(v) from sueltos where f <= i group by o
   )
-  select max(t) from (select sum(v) t from sueltos group by o) y;
+  select max(t) from (select o, sum(t) t from por_app group by o) y;
 $$;
 
 -- Recalcula el día de una persona a partir de los registros guardados y actualiza la app
