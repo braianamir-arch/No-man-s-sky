@@ -1,0 +1,17 @@
+{
+  "name": "Gym de a Dos",
+  "short_name": "Gym de a Dos",
+  "description": "Rutinas, cargas, pasos, agua, peso, glucosa y suplementos de Braian y Rocío.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#18211E",
+  "theme_color": "#745A1F",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
