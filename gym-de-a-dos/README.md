@@ -58,6 +58,28 @@ Llegan pasos, calorías activas, peso, grasa corporal, sueño, pulso en reposo, 
 
 Corré `supabase/iphone.sql` en Supabase. La app muestra en **Ajustes → Pasos y salud automáticos → iPhone** cómo armar el atajo que llama a `registrar_dia` todas las noches.
 
+## Comidas
+
+En **Comidas** se elige a qué comida va (desayuno, almuerzo, merienda o cena; se elige sola según la hora) y se carga de cinco maneras:
+
+- **Lista de alimentos**: ~125 alimentos por grupo con proteína, calorías, carbohidratos y grasas. Tocando el nombre se elige la cantidad (½, 1, 2… o en gramos).
+- **Código**: escanea el código de barras del paquete y trae la tabla nutricional de [Open Food Facts](https://world.openfoodfacts.org). En Android usa el lector del navegador; en iPhone, `vendor/zxing.min.js` (ZXing, licencia Apache 2.0).
+- **Foto** y **Escribir**: la IA calcula los macros (ver abajo).
+- **Frecuentes y recientes**, y **Repetir la comida de ayer**.
+- **Cargar a mano**.
+
+La meta de calorías sube un poco los días con más de 8.000 pasos. **¿Qué como ahora?** sugiere qué comer según lo que falta del día. En **Comida y agua** están el resumen de la semana y **Comida y resultados** (alcohol y proteína contra el rendimiento en el gym, calorías contra el peso y carbohidratos contra la glucosa).
+
+### Comidas con IA (foto y texto)
+
+Usa la API de Claude desde una Edge Function de Supabase, así la clave nunca queda en la app:
+
+1. En console.anthropic.com → **API Keys** creá una clave (sirve la misma cuenta que usás para otras cosas; conviene una clave aparte y un límite de gasto en **Billing → Limits**).
+2. Supabase → **Edge Functions → Secrets**: agregá `ANTHROPIC_API_KEY`.
+3. Supabase → **Edge Functions → Deploy a new function → Via Editor**, nombre `comida-ia`, pegá `supabase/functions/comida-ia/index.ts` y **Deploy**.
+
+Solo la pueden usar las cuentas con sesión iniciada en la app.
+
 ## Spotify
 
 Registrá la app en developer.spotify.com/dashboard (los pasos están en **Ajustes → Spotify**) y poné el **Client ID** en `config.js` (`spotifyClientId`). Los controles necesitan Spotify Premium.
