@@ -5,5 +5,7 @@ window.GYM_CONFIG = {
   supabaseUrl: "https://kzprocqkxmozomxzyrcu.supabase.co",
   supabaseAnonKey: "sb_publishable_AbbcoVvF5x77uGggKLZZMQ_iZhjf1qk",
   // Spotify (developer.spotify.com/dashboard → la app → Client ID). Vacío: la tarjeta de Spotify no aparece.
-  spotifyClientId: ""
+  spotifyClientId: "",
+  // Comidas con IA (foto y texto). Antes de activarla hay que instalar la función comida-ia en Supabase (ver README).
+  comidaIA: false
 };

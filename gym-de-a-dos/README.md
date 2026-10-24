@@ -64,7 +64,7 @@ En **Comidas** se elige a qué comida va (desayuno, almuerzo, merienda o cena; s
 
 - **Lista de alimentos**: ~125 alimentos por grupo con proteína, calorías, carbohidratos y grasas. Tocando el nombre se elige la cantidad (½, 1, 2… o en gramos).
 - **Código**: escanea el código de barras del paquete y trae la tabla nutricional de [Open Food Facts](https://world.openfoodfacts.org). En Android usa el lector del navegador; en iPhone, `vendor/zxing.min.js` (ZXing, licencia Apache 2.0).
-- **Foto** y **Escribir**: la IA calcula los macros (ver abajo).
+- **Foto** y **Escribir**: la IA calcula los macros (apagada por ahora; ver abajo).
 - **Frecuentes y recientes**, y **Repetir la comida de ayer**.
 - **Cargar a mano**.
 
@@ -78,7 +78,9 @@ Usa la API de Claude desde una Edge Function de Supabase, así la clave nunca qu
 2. Supabase → **Edge Functions → Secrets**: agregá `ANTHROPIC_API_KEY`.
 3. Supabase → **Edge Functions → Deploy a new function → Via Editor**, nombre `comida-ia`, pegá `supabase/functions/comida-ia/index.ts` y **Deploy**.
 
-Solo la pueden usar las cuentas con sesión iniciada en la app.
+4. En `config.js` poné `comidaIA: true` para que aparezcan los botones **Foto** y **Escribir**.
+
+Solo la pueden usar las cuentas con sesión iniciada en la app. Mientras `comidaIA` esté en `false`, la IA queda apagada y no se gasta nada.
 
 ## Spotify
 

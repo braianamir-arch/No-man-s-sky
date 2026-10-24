@@ -476,6 +476,7 @@ details.fmore[open] > summary{margin-bottom:8px}
 .ftools{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px}
 .ftool{display:grid; justify-items:center; gap:6px; border:0; background:var(--card-in); border-radius:18px; padding:12px 6px; font-size:13.5px; font-weight:600; cursor:pointer; color:var(--ink)}
 .ftool svg{width:24px; height:24px; color:var(--accent)}
+.ftool.wide{display:flex; justify-content:center; align-items:center; gap:10px; width:100%; padding:13px}
 .fcard{display:grid; gap:10px; background:var(--card-in); border-radius:20px; padding:14px; border:1px solid var(--card-line)}
 .fcard h3{font-family:var(--f-display); font-weight:600; font-size:16px}
 .fcard.sug{border-color:color-mix(in srgb, var(--accent) 45%, transparent)}
@@ -1408,7 +1409,8 @@ function secFood(p, prof, d, full) {
   const quick = prof.foods.length || rec.length ? `<div class="chips">${prof.foods.map(f => `<button type="button" class="fchip" data-act="food-add" data-id="${esc(f.id)}" data-write>${SVGI(I_PLUS)}${esc(f.n)} <small>${fmtN(f.p)} g</small></button>`).join("")}${rec.map((f, i) => `<button type="button" class="fchip rec" data-act="rec-add" data-i="${i}" data-write>${SVGI(I_PLUS)}${esc(f.n)} <small>${fmtN(f.p)} g</small></button>`).join("")}</div>` : "";
   if (!full) return `<div class="sec"><h3>Comida</h3>${foodSummary(prof, d, t, G)}${supps}${quick}<div><button type="button" class="ghost" data-act="sheet" data-s="food">Abrir comidas</button></div></div>`;
   const meals = `<div class="ctxs meals2" role="group" aria-label="Comida">${MEALS.map(([k, l]) => `<button type="button" data-act="food-meal" data-m="${k}" aria-pressed="${k === m}">${MEAL_ICON[k]} ${l}</button>`).join("")}</div>`;
-  const tools = `<div class="ftools"><label class="ftool" data-free><input type="file" accept="image/*" data-f="ai-photo" data-free hidden>${SVGI(I_CAM)}<span>Foto</span></label><button type="button" class="ftool" data-act="scan" data-free>${SVGI(I_BAR)}<span>Código</span></button><button type="button" class="ftool" data-act="ai-text-open" data-free>${SVGI(I_PEN)}<span>Escribir</span></button></div>`;
+  const tools = CFG.comidaIA ? `<div class="ftools"><label class="ftool" data-free><input type="file" accept="image/*" data-f="ai-photo" data-free hidden>${SVGI(I_CAM)}<span>Foto</span></label><button type="button" class="ftool" data-act="scan" data-free>${SVGI(I_BAR)}<span>Código</span></button><button type="button" class="ftool" data-act="ai-text-open" data-free>${SVGI(I_PEN)}<span>Escribir</span></button></div>`
+    : `<button type="button" class="ftool wide" data-act="scan" data-free>${SVGI(I_BAR)}<span>Escanear código de barras</span></button>`;
   const sg = suggestFoods(G, t, m), whey = act.find(s => s.id === "proteina" && !(d.supps && d.supps[s.id]));
   const sug = G.p && sg.remP >= 10 && (sg.out.length || whey) ? `<div class="fcard sug"><h3>¿Qué como ahora?</h3><p class="small">Te faltan ${Math.round(sg.remP)} g de proteína${sg.remK != null ? ` y ${fmtInt(Math.max(0, sg.remK))} kcal` : ""}. Para ${MEALS.find(x => x[0] === m)[1].toLowerCase()}, lo que más proteína da por caloría:</p><div class="chips">${whey ? `<button type="button" class="fchip" data-act="supp" data-id="${esc(whey.id)}" data-write>${SVGI(I_PLUS)}${esc(whey.name)} <small>${fmtN(suppNutr(whey).p)} g</small></button>` : ""}${sg.out.map(f => `<button type="button" class="fchip" data-act="db-add" data-id="${esc(f.id)}" data-write>${SVGI(I_PLUS)}${esc(f.n)} <small>${fmtN(f.p)} g · ${fmtInt(f.k)}</small></button>`).join("")}</div></div>`
     : G.k && sg.remK != null && sg.remK < 0 ? `<div class="fcard sug"><p class="small">Ya pasaste las calorías del día. Si tenés hambre: verduras, caldo, gelatina o yogur descremado, que casi no suman.</p></div>` : "";
@@ -2527,6 +2529,7 @@ function spotifyCard() {
     <div class="spbtns"><button type="button" data-act="sp-prev" data-free aria-label="Anterior">${SVGI('<path d="M7 6v12M18 6l-8 6 8 6z"/>')}</button><button type="button" class="pp" data-act="${sp.is_playing ? "sp-pause" : "sp-play"}" data-free aria-label="${sp.is_playing ? "Pausa" : "Reproducir"}">${sp.is_playing ? SVGI('<path d="M9 6v12M15 6v12"/>') : SVGI('<path d="M8 5l11 7-11 7z"/>')}</button><button type="button" data-act="sp-next" data-free aria-label="Siguiente">${SVGI('<path d="M17 6v12M6 6l8 6-8 6z"/>')}</button></div></section>`;
 }
 function aiSettings() {
+  if (!CFG.comidaIA) return "";
   return `<section class="card g"><h2>Comidas con IA</h2><p class="small">Sacale una foto al plato o escribí lo que comiste, y la IA calcula proteína, calorías, carbohidratos y grasas. Usa la API de Claude con tu clave; cada foto cuesta unos pocos centavos de dólar. Se instala una sola vez:</p>
     <details class="howto"><summary>Cómo instalarla</summary><ol class="how">
       <li>En <b>console.anthropic.com → API Keys</b> creá una clave nueva (por ejemplo «gym-de-a-dos»). Conviene ponerle un límite de gasto mensual en <b>Billing → Limits</b>.</li>
