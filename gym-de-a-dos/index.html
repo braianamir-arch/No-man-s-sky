@@ -631,42 +631,44 @@ const DEFAULTS = {
       E("polea-cuerda", "Empuje en polea con cuerda", "maquina", 3, "12-15", "", "C2"),
       E("vuelos-lat", "Vuelos laterales", "mancuerna", 4, "15") ] }
   ] },
-  rocio: { days: [
-    { id: "lun", wd: 1, label: "Glúteo · Femoral", focus: "", ex: [
-      E("hip-thrust", "Hip thrust", "barra", 4, "8-12"),
-      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "10-12"),
-      E("peso-muerto", "Peso muerto", "barra", 3, "10-12"),
-      E("abduccion", "Abducción en máquina", "maquina", 3, "12-15"),
-      E("sillon-isquios", "Sillón de isquios", "maquina", 3, "12-15"),
-      E("cardio-lun", "Cardio + caminata", "cardio", 1, "15 + 10 min") ] },
-    { id: "mar", wd: 2, label: "Espalda · Bíceps", focus: "", ex: [
-      E("jalon-pecho", "Jalón al pecho", "maquina", 3, "10-12"),
-      E("remo-barra", "Remo con barra", "barra", 3, "10-12"),
-      E("pullover", "Pullover", "mancuerna", 3, "12-15"),
-      E("curl-biceps", "Curl de bíceps", "mancuerna", 3, "10-12"),
-      E("curl-martillo", "Curl martillo", "mancuerna", 3, "10-12"),
-      E("correr", "Correr + caminar", "cardio", 1, "10 + 10 min") ] },
-    { id: "mie", wd: 3, label: "Glúteo · Cuádriceps", focus: "", ex: [
-      E("hip-thrust", "Hip thrust", "barra", 4, "8-12"),
-      E("sentadilla", "Sentadilla", "barra", 3, "10-12"),
-      E("sillon-cuad", "Sillón de cuádriceps", "maquina", 3, "12-15"),
-      E("patada-gluteo", "Patada de glúteo", "maquina", 3, "12-15"),
-      E("escalera", "Escalera", "cardio", 1, "Libre") ] },
-    { id: "jue", wd: 4, label: "Pecho · Tríceps · Hombro", focus: "", ex: [
-      E("press-banca", "Press banca", "barra", 3, "10-12"),
-      E("press-inclinado", "Press inclinado", "mancuerna", 3, "10-12"),
-      E("press-militar", "Press militar", "mancuerna", 3, "10-12"),
-      E("posterior", "Deltoides posterior", "mancuerna", 3, "12-15"),
-      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15"),
-      E("ext-triceps", "Extensión de tríceps", "maquina", 3, "12-15"),
-      E("curl-triceps", "Curl de tríceps", "maquina", 3, "12-15"),
-      E("caminar", "Caminar", "cardio", 1, "Libre") ] },
-    { id: "vie", wd: 5, label: "Glúteo · Femoral", focus: "", ex: [
-      E("hip-thrust", "Hip thrust", "barra", 4, "8-12"),
-      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "10-12"),
-      E("peso-muerto", "Peso muerto", "barra", 3, "10-12"),
-      E("patada-gluteo", "Patada de glúteo", "maquina", 3, "12-15"),
-      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "12-15") ] }
+  // Rocío: mismos días que Braian (pierna, torso, descanso, pierna, torso). Glúteo 3 veces por semana (prioridad),
+  // superseries en torso para que entre todo en ~50 min, core para el abdomen y cardio al final para bajar de peso.
+  rocio: { rv: 2, days: [
+    { id: "lun", wd: 1, label: "Pierna A", focus: "Glúteo y cuádriceps", ex: [
+      E("sentadilla", "Sentadilla", "barra", 3, "8-10", "Primero: es la que más técnica pide"),
+      E("hip-thrust", "Hip thrust", "barra", 4, "8-12", "Pausa de 1 s arriba"),
+      E("prensa", "Prensa (pies altos y abiertos)", "maquina", 3, "10-12", "", "A1"),
+      E("abduccion", "Abducción en máquina", "maquina", 3, "15-20", "", "A2"),
+      E("sillon-cuad", "Sillón de cuádriceps", "maquina", 3, "12-15", "", "B1"),
+      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "12-15", "", "B2"),
+      E("cinta-lun", "Caminata en cinta inclinada", "cardio", 1, "15-20 min") ] },
+    { id: "mar", wd: 2, label: "Torso A", focus: "Empuje, espalda y core", ex: [
+      E("press-inclinado", "Press inclinado (mancuerna)", "mancuerna", 3, "10-12", "", "A1"),
+      E("remo-barra", "Remo con barra", "barra", 3, "10-12", "", "A2"),
+      E("press-militar", "Press militar (mancuerna)", "mancuerna", 3, "10-12", "", "B1"),
+      E("jalon-pecho", "Jalón al pecho", "maquina", 3, "10-12", "", "B2"),
+      E("ext-triceps", "Extensión de tríceps en polea", "maquina", 3, "12-15", "", "C1"),
+      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15", "", "C2"),
+      E("plancha", "Plancha", "corporal", 3, "30-45 s"),
+      E("cardio-mar", "Cardio (bici o elíptico)", "cardio", 1, "10-15 min") ] },
+    { id: "jue", wd: 4, label: "Pierna B", focus: "Glúteo y femoral", ex: [
+      E("peso-muerto", "Peso muerto rumano", "barra", 3, "8-10", "Primero: espalda recta, cadera atrás"),
+      E("hip-thrust", "Hip thrust", "barra", 4, "8-12", "Pausa de 1 s arriba"),
+      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "10-12", "Por pierna, torso inclinado adelante", "A1"),
+      E("patada-gluteo", "Patada de glúteo", "maquina", 3, "12-15", "Por pierna", "A2"),
+      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "12-15", "", "B1"),
+      E("hiperext", "Hiperextensiones 45° (glúteo)", "corporal", 3, "12-15", "Espalda redondeada, apretar glúteo", "B2"),
+      E("cinta-jue", "Caminata en cinta inclinada", "cardio", 1, "15-20 min") ] },
+    { id: "vie", wd: 5, label: "Torso B", focus: "Espalda, brazos y glúteo", ex: [
+      E("jalon-neutro", "Jalón al pecho (agarre neutro)", "maquina", 3, "10-12", "", "A1"),
+      E("flexiones", "Flexiones", "corporal", 3, "8-12", "De rodillas si hace falta", "A2"),
+      E("remo-polea", "Remo en polea baja", "maquina", 3, "10-12", "", "B1"),
+      E("posterior", "Deltoides posterior", "mancuerna", 3, "12-15", "", "B2"),
+      E("curl-biceps", "Curl de bíceps", "mancuerna", 3, "10-12", "", "C1"),
+      E("ext-nuca", "Extensión tras nuca (mancuerna)", "mancuerna", 3, "12-15", "", "C2"),
+      E("abduccion", "Abducción en máquina", "maquina", 3, "15-20", "", "D1"),
+      E("elev-piernas", "Elevación de piernas", "corporal", 3, "10-15", "", "D2"),
+      E("cardio-vie", "Caminata", "cardio", 1, "10-15 min") ] }
   ] }
 };
 const PEOPLE = {
@@ -1105,6 +1107,9 @@ function migrate() {
   // v2: objetivo de bajar grasa; la meta de pasos guardada de 8.000 pasa a 10.000
   const d = S.docs["profiles/braian"];
   if (S.canWrite && d && !d.v2) writeDoc("profiles/braian", Object.assign({}, d, { stepsGoal: !d.stepsGoal || d.stepsGoal === 8000 ? 10000 : d.stepsGoal, v2: true, updated: Date.now() }), 300);
+  // Rutina nueva de Rocío (rv 2): reemplaza la guardada una sola vez; los registros de entrenos quedan
+  const r = S.docs["routines/rocio"];
+  if (S.canWrite && r && (r.rv || 1) < DEFAULTS.rocio.rv) writeDoc("routines/rocio", Object.assign({}, r, { days: clone(DEFAULTS.rocio.days), rv: DEFAULTS.rocio.rv, updated: Date.now() }), 300);
 }
 function profileEdit(fn) {
   const p = S.person, d = clone(profile(p));
