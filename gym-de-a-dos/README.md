@@ -68,6 +68,8 @@ En **Comidas** se elige a qué comida va (desayuno, almuerzo, merienda o cena; s
 - **Frecuentes y recientes**, y **Repetir la comida de ayer**.
 - **Cargar a mano**.
 
+**Nutrientes del día** (plegado) muestra fibra, azúcares, grasas saturadas, sodio, calcio, hierro, potasio, magnesio y vitaminas C, D y B12, con qué alimento completar lo que falta. Cada comida lleva una nota de la A a la D. Una comida se puede **guardar como plato** y después agregarla de un toque. **Armame un plan** propone qué comer en lo que queda del día. Con el **ayuno intermitente** activado (Ajustes), cuenta solo desde la última comida.
+
 La meta de calorías sube un poco los días con más de 8.000 pasos. **¿Qué como ahora?** sugiere qué comer según lo que falta del día. En **Comida y agua** están el resumen de la semana y **Comida y resultados** (alcohol y proteína contra el rendimiento en el gym, calorías contra el peso y carbohidratos contra la glucosa).
 
 ### Comidas con IA (foto y texto)
@@ -81,6 +83,10 @@ Usa la API de Claude desde una Edge Function de Supabase, así la clave nunca qu
 4. En `config.js` poné `comidaIA: true` para que aparezcan los botones **Foto** y **Escribir**.
 
 Solo la pueden usar las cuentas con sesión iniciada en la app. Mientras `comidaIA` esté en `false`, la IA queda apagada y no se gasta nada.
+
+## Progreso: rachas, logros y fotos
+
+En **Progreso** hay rachas (días cargando comida, días con proteína, semanas completas) y logros. Las **fotos de progreso** se guardan en un espacio privado de Supabase: corré una vez `supabase/fotos.sql` en el SQL Editor. Solo las ven las cuentas de la app.
 
 ## Spotify
 
