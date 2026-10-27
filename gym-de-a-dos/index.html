@@ -154,7 +154,7 @@ img{-webkit-user-drag:none}
 .subnav button{flex:1; min-width:0; height:32px; border:0; background:transparent; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px}
 .subnav button[aria-pressed="true"]{background:var(--seg-on); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04)}
 /* Barra de pestañas abajo */
-.tabbar,.navbar{--dock:var(--bar)}
+.tabbar{--dock:var(--bar)}
 .tabbar{position:fixed; left:0; right:0; bottom:0; z-index:9; display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
   height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:max(6px, calc((100% - 640px) / 2));
   background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-top:.5px solid var(--line); view-transition-name:tabbar}
@@ -164,12 +164,6 @@ img{-webkit-user-drag:none}
 .tabbar button[aria-current="page"]{color:var(--accent)}
 .tabbar button[aria-current="page"] svg{stroke-width:2.2}
 .tabbar button[aria-current="page"] .tdot{transform:scaleX(1)}
-/* Barra compacta que aparece al bajar, con el título chico (como iOS) */
-.navbar{position:fixed; left:0; right:0; top:0; z-index:11; height:calc(44px + env(safe-area-inset-top, 0px)); padding-top:env(safe-area-inset-top, 0px); display:grid; place-items:center;
-  background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-bottom:.5px solid var(--line);
-  opacity:0; pointer-events:none; transition:opacity .18s ease}
-.navbar.on{opacity:1}
-.navbar span{font-weight:600; font-size:16.5px; letter-spacing:-.01em}
 body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--top)}
 .sechead{display:grid; gap:6px; padding:0 4px 2px}
 .sechead h2{display:none}
@@ -648,7 +642,6 @@ ol.how{margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px}
 
 <div id="app" data-person="braian">
   <div class="bgfx" aria-hidden="true"></div>
-  <div class="navbar" id="navbar" aria-hidden="true"><span id="ntitle">Hoy</span></div>
   <div class="wrap">
     <header class="top">
       <div>
@@ -1317,7 +1310,7 @@ function render() {
   $("#menu").innerHTML = S.mode === "login" ? "" : profileMenu();
   $("#secbar").innerHTML = S.mode === "login" ? "" : segBar();
   $("#tabbar").innerHTML = S.mode === "login" ? "" : tabBar();
-  $("#ptitle").textContent = $("#ntitle").textContent = pageTitle();
+  $("#ptitle").textContent = pageTitle();
   $("#app").dataset.mode = S.mode;
   renderStatus(); renderBanner();
   const v = view();
@@ -2104,7 +2097,10 @@ const curTab = () => S.tab === "home" ? (S.sec === "nutri" ? "food" : "home") : 
 const navKey = () => S.tab === "home" ? "home-" + S.sec : S.tab;
 function pageTitle() {
   if (S.mode === "login") return "Gym de a Dos";
-  return { home: "Hoy", food: "Comida", train: "Entreno", prog: "Progreso", settings: "Ajustes" }[curTab()] || "Hoy";
+  const t = curTab();
+  // En Hoy, el título sigue a la fecha que se está mirando
+  if (t === "home") return S.date === today() ? "Hoy" : S.date === addDays(today(), -1) ? "Ayer" : fmtShort(S.date);
+  return { food: "Comida", train: "Entreno", prog: "Progreso", settings: "Ajustes" }[t] || "Hoy";
 }
 function tabBar() {
   const items = [["home", "Hoy", SI.all], ["train", "Entreno", SI.train], ["food", "Comida", SI.nutri], ["prog", "Progreso", SVGI(P_PROG)], ["settings", "Ajustes", SVGI(P_SET)]], cur = curTab();
@@ -2120,10 +2116,9 @@ function segBar() {
 const reduceMotion = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
 function go(fn) {
   S.scrollMem[navKey()] = window.scrollY;
-  const run = () => { fn(); render(); window.scrollTo(0, S.scrollMem[navKey()] || 0); updateNavbar(); };
+  const run = () => { fn(); render(); window.scrollTo(0, S.scrollMem[navKey()] || 0); };
   if (document.startViewTransition && !reduceMotion()) document.startViewTransition(run); else run();
 }
-function updateNavbar() { const n = $("#navbar"); if (n) n.classList.toggle("on", window.scrollY > 46 && S.mode !== "login"); }
 // Vibración corta al tocar: Android con vibrate; iPhone (iOS 18) con el interruptor nativo escondido
 let hapEl = null;
 function haptic() {
@@ -3186,7 +3181,6 @@ function bind() {
   // El contador de ayuno se actualiza cada minuto
   setInterval(() => { if (document.querySelector(".fastcard, .fpill")) scheduleRender(); }, 60000);
   view().addEventListener("toggle", e => { const d = e.target; if (d.matches && d.matches("details[data-day]")) { if (d.open) S.openDays.add(d.dataset.day); else S.openDays.delete(d.dataset.day); } }, true);
-  window.addEventListener("scroll", updateNavbar, { passive: true });
   sheetDrag();
   view().addEventListener("scroll", e => {
     if (e.target.id !== "slides") return;
