@@ -145,7 +145,6 @@ label.ghost{display:inline-flex; align-items:center}
 /* Sensación nativa: sin selección de texto, sin zoom al tocar dos veces, sin rebote de la página */
 html,body{overscroll-behavior-y:none}
 html{background:var(--bg)}
-::view-transition{background:var(--bg)}
 body{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility}
 input,textarea,select,[contenteditable]{-webkit-user-select:text; user-select:text}
 img{-webkit-user-drag:none}
@@ -168,7 +167,7 @@ img{-webkit-user-drag:none}
 /* Barra compacta que aparece al bajar, con el título chico (como iOS) */
 .navbar{position:fixed; left:0; right:0; top:0; z-index:11; height:calc(44px + env(safe-area-inset-top, 0px)); padding-top:env(safe-area-inset-top, 0px); display:grid; place-items:center;
   background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-bottom:.5px solid var(--line);
-  opacity:0; pointer-events:none; transition:opacity .18s ease; view-transition-name:navbar}
+  opacity:0; pointer-events:none; transition:opacity .18s ease}
 .navbar.on{opacity:1}
 .navbar span{font-weight:600; font-size:16.5px; letter-spacing:-.01em}
 body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--top)}
@@ -329,10 +328,13 @@ select.tin{appearance:auto}
   .tabbar button:active{transform:scale(.88)}
   .toast:not([hidden]){animation:toastin .26s cubic-bezier(.2,.9,.3,1.2)}
   @keyframes toastin{from{opacity:0; transform:translate(-50%, 12px) scale(.96)}to{opacity:1; transform:translate(-50%, 0)}}
-  /* Cambio de pestaña: primero se va la pantalla vieja y después entra la nueva, sin que se mezclen */
-  ::view-transition-group(root){animation-duration:.3s}
-  ::view-transition-old(root){animation:vt-out .1s ease-in both}
-  ::view-transition-new(root){animation:vt-in .22s cubic-bezier(.2,.8,.2,1) .09s both}
+  /* Cambio de pestaña: el fondo, el encabezado y las pestañas quedan quietos; solo el contenido sale y entra, sin mezclarse */
+  #view{view-transition-name:main}
+  ::view-transition-old(root),::view-transition-old(tabbar),::view-transition-old(dock){display:none}
+  ::view-transition-new(root),::view-transition-new(tabbar),::view-transition-new(dock){animation:none}
+  ::view-transition-group(main){animation:none}
+  ::view-transition-old(main){animation:vt-out .1s ease-in both}
+  ::view-transition-new(main){animation:vt-in .24s cubic-bezier(.2,.8,.2,1) .08s both}
   @keyframes vt-out{to{opacity:0}}
   @keyframes vt-in{from{opacity:0; transform:translateY(8px)}}
 }
