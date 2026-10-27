@@ -2753,24 +2753,24 @@ const SET_ICON = {
   app: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>', ai: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/>'
 };
 const SET_TITLE = { goals: "Metas", routine: "Rutina", supps: "Suplementos", plates: "Comidas guardadas", fast: "Ayuno intermitente", glu: "Glucosa", health: "Pasos y salud", spotify: "Spotify", app: "Copia y cuenta", ai: "Comidas con IA" };
-function setRow(k, sub, color) { return `<button type="button" class="srow" data-act="set-open" data-k="${k}"><span class="sic" style="background:${color}">${SVGI(SET_ICON[k])}</span><span class="st">${SET_TITLE[k]}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${ICON.right || SVGI('<path d="m9 6 6 6-6 6"/>')}</button>`; }
+function settingRow(k, sub, color) { return `<button type="button" class="srow" data-act="set-open" data-k="${k}"><span class="sic" style="background:${color}">${SVGI(SET_ICON[k])}</span><span class="st">${SET_TITLE[k]}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${ICON.right || SVGI('<path d="m9 6 6 6-6 6"/>')}</button>`; }
 function viewSettings() {
   if (S.setPage) return settingsPage(S.setPage);
   const p = S.person, prof = profile(p), act = prof.supps.filter(s => s.active).length, tok = S.docs["settings/steps"] && S.docs["settings/steps"].token;
   return `<div class="stack">
     <div class="sgroup">
-      ${setRow("goals", `${prof.protGoal || "—"} g de proteína · ${prof.kcalGoal ? fmtInt(prof.kcalGoal) + " kcal" : "sin meta de calorías"}`, "#FF6B5B")}
-      ${setRow("routine", `${routine(p).days.length} días por semana`, "#5B7CFA")}
-      ${setRow("supps", act ? `${act} ${act === 1 ? "activo" : "activos"}` : "Ninguno", "#2FB66D")}
-      ${setRow("plates", prof.plates.length + prof.foods.length ? `${prof.plates.length + prof.foods.length} guardadas` : "", "#F5A524")}
-      ${setRow("fast", prof.fastOn ? `${prof.fastH || 16}:${24 - (prof.fastH || 16)}` : "Apagado", "#9B6BF2")}
-      ${setRow("glu", prof.glucose ? "Activada" : "Apagada", "#E5484D")}
+      ${settingRow("goals", `${prof.protGoal || "—"} g de proteína · ${prof.kcalGoal ? fmtInt(prof.kcalGoal) + " kcal" : "sin meta de calorías"}`, "#FF6B5B")}
+      ${settingRow("routine", `${routine(p).days.length} días por semana`, "#5B7CFA")}
+      ${settingRow("supps", act ? `${act} ${act === 1 ? "activo" : "activos"}` : "Ninguno", "#2FB66D")}
+      ${settingRow("plates", prof.plates.length + prof.foods.length ? `${prof.plates.length + prof.foods.length} guardadas` : "", "#F5A524")}
+      ${settingRow("fast", prof.fastOn ? `${prof.fastH || 16}:${24 - (prof.fastH || 16)}` : "Apagado", "#9B6BF2")}
+      ${settingRow("glu", prof.glucose ? "Activada" : "Apagada", "#E5484D")}
     </div>
     <div class="sgroup">
-      ${setRow("health", S.mode !== "db" ? "Necesita la cuenta compartida" : tok ? "Clave creada" : "Sin configurar", "#20B8D0")}
-      ${CFG.spotifyClientId ? setRow("spotify", spTok(p) ? "Conectado" : "Sin conectar", "#1DB954") : ""}
-      ${CFG.comidaIA ? setRow("ai", "", "#7A5AF8") : ""}
-      ${setRow("app", S.mode === "db" ? S.userEmail || "Cuenta compartida" : "Solo en este teléfono", "#8A94A6")}
+      ${settingRow("health", S.mode !== "db" ? "Necesita la cuenta compartida" : tok ? "Clave creada" : "Sin configurar", "#20B8D0")}
+      ${CFG.spotifyClientId ? settingRow("spotify", spTok(p) ? "Conectado" : "Sin conectar", "#1DB954") : ""}
+      ${CFG.comidaIA ? settingRow("ai", "", "#7A5AF8") : ""}
+      ${settingRow("app", S.mode === "db" ? S.userEmail || "Cuenta compartida" : "Solo en este teléfono", "#8A94A6")}
     </div>
     <p class="small" style="text-align:center">Gym de a Dos · ${esc(PEOPLE[p].name)}</p>
   </div>`;
