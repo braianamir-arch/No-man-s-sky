@@ -37,7 +37,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --shadow:0 10px 30px -10px rgba(40,70,60,.18);
   --f-display:-apple-system,"SF Pro Display",BlinkMacSystemFont,"Google Sans","Roboto",system-ui,sans-serif;
   --f-body:-apple-system,"SF Pro Text",BlinkMacSystemFont,"Google Sans Text","Roboto",system-ui,sans-serif;
-  --seg-on:#FFFFFF; --tabh:58px; --bar:rgba(246,248,246,.97);
+  --seg-on:#FFFFFF; --tabh:58px; --bar:rgba(246,248,246,.99);
   --r-lg:22px; --r:18px; --r-sm:14px;
 }
 @media (prefers-color-scheme: dark){
@@ -51,7 +51,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
     --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
     --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
     --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.97);
+    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.99);
   }
 }
 :root[data-theme="dark"]{
@@ -64,7 +64,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
   --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
   --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.97);
+  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.99);
 }
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.45;
@@ -171,15 +171,11 @@ img{-webkit-user-drag:none}
   height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:var(--pl); view-transition-name:tabbar;
   transition:--ti .46s cubic-bezier(.45,1.35,.4,1)}
 .tabbar:empty{display:none}
-/* fondo de la barra con la muesca recortada (máscara con una curva suave) */
 .tabbar::before{content:""; position:absolute; inset:0; z-index:-1; background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
-  border-top:.5px solid var(--line); box-shadow:0 -6px 24px rgba(0,0,0,.08);
-  --notch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='124' height='40'%3E%3Cpath d='M0 0C22 0 26 36 62 36S102 0 124 0Z'/%3E%3C/svg%3E");
-  -webkit-mask:var(--notch) calc(var(--tx) - 62px) -1px / 124px 40px no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
-  mask:var(--notch) calc(var(--tx) - 62px) -1px / 124px 40px no-repeat exclude, linear-gradient(#000 0 0)}
-.tbub{position:absolute; top:-25px; left:calc(var(--tx) - 26px); width:52px; height:52px; border-radius:50%; display:grid; place-items:center; pointer-events:none;
+  border-top:.5px solid var(--line); box-shadow:0 -6px 24px rgba(0,0,0,.08)}
+.tbub{position:absolute; top:-24px; left:calc(var(--tx) - 26px); width:52px; height:52px; border-radius:50%; display:grid; place-items:center; pointer-events:none;
   background:radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--accent) 70%, #FFFFFF), var(--accent) 60%); color:var(--on-accent);
-  box-shadow:0 10px 22px -6px color-mix(in srgb, var(--accent) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.35)}
+  box-shadow:0 0 0 6px var(--bar), 0 12px 24px -6px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 1px 0 rgba(255,255,255,.35)}
 .tbub svg{width:24px; height:24px; stroke-width:2.2}
 .tabbar button{border:0; background:transparent; display:grid; justify-items:center; align-content:end; gap:3px; color:var(--ink-3); font-size:10.5px; font-weight:600; letter-spacing:.01em; padding:0 0 9px}
 .tabbar button svg{width:25px; height:25px; stroke-width:1.7; transition:opacity .2s ease, transform .3s cubic-bezier(.3,.7,.3,1)}
