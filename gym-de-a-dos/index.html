@@ -19,9 +19,6 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap">
 <style>
 /* Layout: estilo Samsung Health. Columna de 640px; arriba título + barra de secciones con íconos; tarjetas de color vivo con ilustración en la esquina y tarjetas neutras para datos; píldora de navegación flotante y botón redondo de registro.
    Claro: degradé pastel menta→durazno con tarjetas de vidrio lechoso. Oscuro: verde casi negro con brillo dorado arriba, como la app. */
@@ -38,8 +35,9 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --good:#15804C; --warn:#A5620B; --bad:#C2281C;
   --p25:#D2232A; --p20:#1D58CC; --p15:#E6B417; --p10:#23905A; --p5:#FAFAFA; --psm:#6A7280; --p-ink:#FFFFFF; --p-ink-dark:#1A1A1A;
   --shadow:0 10px 30px -10px rgba(40,70,60,.18);
-  --f-display:"Outfit","Avenir Next","Segoe UI",system-ui,sans-serif;
-  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-display:-apple-system,"SF Pro Display",BlinkMacSystemFont,"Google Sans","Roboto",system-ui,sans-serif;
+  --f-body:-apple-system,"SF Pro Text",BlinkMacSystemFont,"Google Sans Text","Roboto",system-ui,sans-serif;
+  --seg-on:#FFFFFF; --tabh:58px; --bar:rgba(246,248,246,.93);
   --r-lg:22px; --r:18px; --r-sm:14px;
 }
 @media (prefers-color-scheme: dark){
@@ -53,7 +51,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
     --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
     --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
     --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark;
+    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.93);
   }
 }
 :root[data-theme="dark"]{
@@ -66,7 +64,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
   --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
   --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark;
+  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.93);
 }
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.45;
@@ -79,7 +77,7 @@ body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-siz
     radial-gradient(70% 38% at -10% 48%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
     radial-gradient(70% 36% at 110% 78%, rgba(124,92,230,.13) 0%, transparent 70%),
     linear-gradient(180deg, var(--bg-a) 0%, var(--bg) 42%, var(--bg-b) 100%)}
-.wrap{position:relative; z-index:1; max-width:640px; margin:0 auto; padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
+.wrap{position:relative; z-index:1; max-width:640px; margin:0 auto; padding-bottom:calc(var(--tabh) + 100px + env(safe-area-inset-bottom, 0px))}
 button{font:inherit; color:inherit; cursor:pointer}
 button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allowed; opacity:.5}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
@@ -113,9 +111,9 @@ svg.i{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stro
 .empty b{display:block; color:var(--ink); margin-bottom:4px}
 
 /* Encabezado */
-.top{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:18px 16px}
-.title{font-family:var(--f-display); font-weight:600; font-size:23px; letter-spacing:-.01em; line-height:1.15}
-.sub{font-size:12.5px; color:var(--ink-2); margin-top:2px}
+.top{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-block:12px 12px}
+.title{font-family:var(--f-display); font-weight:700; font-size:34px; letter-spacing:-.025em; line-height:1.1}
+.sub{font-size:13px; color:var(--ink-2); margin-bottom:2px}
 .sub b{color:var(--ink); font-weight:600}
 .sub [data-s="saving"]{color:var(--warn)} .sub [data-s="error"]{color:var(--bad)}
 .p-braian{--pc:var(--braian)} .p-rocio{--pc:var(--rocio)}
@@ -144,24 +142,44 @@ svg.i{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stro
 #app[data-mode="login"] .dock,#app[data-mode="login"] .whoball{display:none}
 label.ghost{display:inline-flex; align-items:center}
 
-/* Barra de secciones con íconos (como la fila de íconos de Samsung Health) */
-.secbar{display:flex; padding:3px; border-radius:999px; gap:0; position:sticky; top:calc(6px + env(safe-area-inset-top, 0px)); z-index:6; margin-bottom:12px; overflow-x:auto; scrollbar-width:none}
-.secbar::-webkit-scrollbar{display:none}
-.secbar:empty{display:none}
-.secbar button{flex:1 0 40px; min-width:40px; height:40px; border:0; background:transparent; border-radius:999px; display:grid; place-items:center; color:var(--ink-2)}
-.secbar button svg{width:22px; height:22px; stroke-width:1.6}
-.secbar.g{background:color-mix(in srgb, var(--card) 45%, transparent)}
-.secbar button[aria-current="page"]{background:var(--fill-2); color:var(--ink)}
-.secbar button[aria-current="page"] svg{stroke-width:2.2}
+/* Sensación nativa: sin selección de texto, sin zoom al tocar dos veces, sin rebote de la página */
+html,body{overscroll-behavior-y:none}
+body{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:manipulation; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility}
+input,textarea,select,[contenteditable]{-webkit-user-select:text; user-select:text}
+img{-webkit-user-drag:none}
+/* Segmentos de Hoy (como el control segmentado de iOS) */
+.subnav{display:flex; padding:3px; border-radius:11px; gap:2px; background:var(--fill-2); margin:2px 0 14px}
+.subnav:empty{display:none}
+.subnav button{flex:1; min-width:0; height:32px; border:0; background:transparent; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px}
+.subnav button[aria-pressed="true"]{background:var(--seg-on); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04)}
+/* Barra de pestañas abajo */
+.tabbar,.navbar{--dock:var(--bar)}
+.tabbar{position:fixed; left:0; right:0; bottom:0; z-index:9; display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
+  height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:max(6px, calc((100% - 640px) / 2));
+  background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-top:.5px solid var(--line); view-transition-name:tabbar}
+.tabbar:empty{display:none}
+.tabbar button{border:0; background:transparent; display:grid; justify-items:center; align-content:center; gap:3px; color:var(--ink-3); font-size:10.5px; font-weight:600; letter-spacing:.01em; padding:0}
+.tabbar button svg{width:25px; height:25px; stroke-width:1.7}
+.tabbar button[aria-current="page"]{color:var(--accent)}
+.tabbar button[aria-current="page"] svg{stroke-width:2.2}
+.tabbar button[aria-current="page"] .tdot{transform:scaleX(1)}
+/* Barra compacta que aparece al bajar, con el título chico (como iOS) */
+.navbar{position:fixed; left:0; right:0; top:0; z-index:11; height:calc(44px + env(safe-area-inset-top, 0px)); padding-top:env(safe-area-inset-top, 0px); display:grid; place-items:center;
+  background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-bottom:.5px solid var(--line);
+  opacity:0; pointer-events:none; transition:opacity .18s ease; view-transition-name:navbar}
+.navbar.on{opacity:1}
+.navbar span{font-weight:600; font-size:16.5px; letter-spacing:-.01em}
 body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--top)}
-.sechead{display:grid; gap:6px; padding:8px 6px 4px}
-.sechead h2{font-family:var(--f-display); font-weight:600; font-size:26px; line-height:1.15}
-.sechead p{font-size:16px; color:var(--ink-2); line-height:1.45; max-width:58ch}
+.sechead{display:grid; gap:6px; padding:0 4px 2px}
+.sechead h2{display:none}
+#app[data-mode="login"] .sechead h2{display:block; font-family:var(--f-display); font-weight:700; font-size:28px}
+.sechead p{font-size:14.5px; color:var(--ink-2); line-height:1.45; max-width:58ch}
 
 /* Navegación inferior */
 .dock{position:fixed; left:0; right:0; bottom:0; z-index:8; display:flex; justify-content:flex-end; align-items:center; gap:10px; pointer-events:none;
-  padding-left:max(12px, env(safe-area-inset-left, 0px)); padding-right:max(12px, env(safe-area-inset-right, 0px)); padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))}
+  padding-left:max(12px, env(safe-area-inset-left, 0px)); padding-right:max(12px, env(safe-area-inset-right, 0px)); padding-bottom:calc(var(--tabh) + 14px + env(safe-area-inset-bottom, 0px)); view-transition-name:dock}
 .dock > *{pointer-events:auto}
+#app[data-mode="login"] .tabbar{display:none}
 .fab{width:56px; height:56px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; border:1px solid var(--card-line); background:var(--dock); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); box-shadow:0 10px 30px rgba(0,0,0,.12)}
 .fab svg{width:24px; height:24px}
 
@@ -264,7 +282,7 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 .lbl{display:grid; gap:5px; font-size:12.5px; font-weight:600; color:var(--ink-2); min-width:0}
 .lbl.sm{font-size:11.5px}
 .grid2{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px}
-.tin{font:inherit; color:var(--ink); background:var(--fill); border:1.5px solid transparent; border-radius:12px; padding:10px 12px; width:100%; min-width:0; min-height:44px}
+.tin{font:inherit; font-size:16px; color:var(--ink); background:var(--fill); border:1.5px solid transparent; border-radius:12px; padding:10px 12px; width:100%; min-width:0; min-height:44px}
 .tin:focus{outline:none; border-color:var(--accent)}
 select.tin{appearance:auto}
 .switch{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600}
@@ -276,7 +294,9 @@ select.tin{appearance:auto}
   -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); border-radius:28px 28px 0 0; border-top:1px solid var(--card-line);
   padding-top:8px; padding-bottom:calc(22px + env(safe-area-inset-bottom, 0px)); padding-left:max(12px, env(safe-area-inset-left, 0px)); padding-right:max(12px, env(safe-area-inset-right, 0px))}
 .sheet .in{max-width:640px; margin:0 auto; display:grid; gap:18px}
-.grab{width:40px; height:5px; border-radius:99px; background:var(--fill-2); margin:4px auto 2px}
+.grab{width:40px; height:5px; border-radius:99px; background:var(--fill-2); margin:4px auto 2px; box-shadow:0 0 0 14px transparent; touch-action:none}
+.sh-h{touch-action:none}
+.sheet{overscroll-behavior:contain}
 .sh-h{display:flex; justify-content:space-between; align-items:center; gap:10px}
 .sh-h h2{font-family:var(--f-display); font-weight:600; font-size:22px}
 .sec{display:grid; gap:10px}
@@ -300,9 +320,21 @@ select.tin{appearance:auto}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   .av,.secbar button,.supp .ck,.sbtn .dot{transition:transform .18s ease, opacity .18s ease, background-color .18s ease}
   .vc.tap,.tile{transition:transform .15s ease}
-  .vc.tap:active,.tile:active{transform:scale(.985)}
+  .vc.tap:active,.tile:active{transform:scale(.975)}
+  :is(button,[role="button"],label.ghost,.ftool):not(:disabled):not(.tabbar button){transition:transform .16s cubic-bezier(.3,.7,.4,1), background-color .18s ease, opacity .18s ease}
+  :is(button,[role="button"],label.ghost,.ftool):not(:disabled):active{transform:scale(.96)}
+  .tabbar button{transition:transform .16s cubic-bezier(.3,.7,.4,1), color .18s ease}
+  .tabbar button:active{transform:scale(.88)}
+  .toast:not([hidden]){animation:toastin .26s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes toastin{from{opacity:0; transform:translate(-50%, 12px) scale(.96)}to{opacity:1; transform:translate(-50%, 0)}}
+  ::view-transition-old(root){animation:vt-out .16s ease-in both}
+  ::view-transition-new(root){animation:vt-in .24s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes vt-out{to{opacity:0}}
+  @keyframes vt-in{from{opacity:0; transform:translateY(10px)}}
 }
-.toast{position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top, 0px)); transform:translateX(-50%); z-index:30; padding:11px 18px; border-radius:999px; font-size:14px; font-weight:600; max-width:calc(100% - 32px); text-align:center}
+.toast{position:fixed; left:50%; bottom:calc(var(--tabh) + 84px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:30; padding:11px 18px; border-radius:16px; font-size:14px; font-weight:600; max-width:calc(100% - 32px); text-align:center; background:color-mix(in srgb, var(--ink) 88%, transparent); color:var(--bg); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); border:0; box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.g::after{display:none}
+body:has(.sheet) .toast{bottom:calc(24px + env(safe-area-inset-bottom, 0px))}
 
 /* Entrenar */
 .days{display:flex; gap:6px; overflow-x:auto; padding:5px; scrollbar-width:none; border-radius:999px}
@@ -433,7 +465,7 @@ details.howto{border-top:1px solid var(--line); padding-top:10px}
 .fsearch{display:flex; align-items:center; gap:8px; background:var(--fill); border-radius:999px; padding:0 14px; min-height:44px; border:1.5px solid transparent}
 .fsearch:focus-within{border-color:var(--accent)}
 .fsearch svg{width:18px; height:18px; color:var(--ink-3); flex-shrink:0}
-.fsearch input{all:unset; flex:1; min-width:0; font-size:15px; padding:10px 0; color:var(--ink)}
+.fsearch input{all:unset; flex:1; min-width:0; font-size:16px; padding:10px 0; color:var(--ink)}
 .fcats{display:grid; gap:8px}
 details.fcat{background:var(--card-in); border-radius:18px; overflow:hidden}
 details.fcat > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:12px 14px}
@@ -610,21 +642,23 @@ ol.how{margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px}
 
 <div id="app" data-person="braian">
   <div class="bgfx" aria-hidden="true"></div>
+  <div class="navbar" id="navbar" aria-hidden="true"><span id="ntitle">Hoy</span></div>
   <div class="wrap">
     <header class="top">
       <div>
-        <h1 class="title">Gym de a Dos</h1>
         <p class="sub"><b id="who-name">Braian</b> · <span id="status" data-s="ok">Abriendo…</span></p>
+        <h1 class="title" id="ptitle">Hoy</h1>
       </div>
       <button type="button" id="who" class="whoball p-braian" data-act="profile" aria-label="Perfil y cambio de persona" aria-haspopup="dialog"><span class="ring"><span class="av" id="who-av">B</span></span><span class="black">Black</span></button>
     </header>
-    <nav id="secbar" class="secbar g" aria-label="Secciones"></nav>
+    <nav id="secbar" class="subnav" aria-label="Secciones de hoy"></nav>
     <div id="banner" class="banner g" hidden></div>
     <main id="view"></main>
   </div>
   <div id="sheet"></div>
   <div id="menu"></div>
   <div id="toast" class="toast g" role="status" hidden></div>
+  <nav id="tabbar" class="tabbar" aria-label="Pestañas"></nav>
   <div class="dock">
     <button type="button" class="fab" id="fab" data-act="sheet" data-s="all" aria-label="Registrar del día"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M12 8.5v7M8.5 12h7"/></svg></button>
   </div>
@@ -947,7 +981,7 @@ const S = {
   gluDraft: "", gluTime: "", gluCtx: null, gluMeal: null, gluNote: "", gluRange: 14, preDraft: "", openDays: new Set(), sec: "all",
   foodDraft: { n: "", p: "", k: "", c: "", g: "", save: false }, foodQ: "", foodOpen: new Set(),
   foodMeal: null, pickId: null, feQ: 1, feG: "", off: null, ai: null, aiText: null,
-  nutrOpen: false, plan: null, planSeed: 1, photos: {}, plateMeal: null, plateName: ""
+  nutrOpen: false, plan: null, planSeed: 1, photos: {}, plateMeal: null, plateName: "", scrollMem: {}, homeSec: "all"
 };
 const UI_KEY = "gym-de-a-dos:ui", LS_KEY = "gym-de-a-dos:data:v1";
 function loadUI() {
@@ -1275,7 +1309,9 @@ function render() {
   $("#who-name").textContent = PEOPLE[S.person].name;
   $("#who").className = "whoball p-" + S.person; $("#who-av").textContent = PEOPLE[S.person].name[0];
   $("#menu").innerHTML = S.mode === "login" ? "" : profileMenu();
-  $("#secbar").innerHTML = S.mode === "login" ? "" : topBar();
+  $("#secbar").innerHTML = S.mode === "login" ? "" : segBar();
+  $("#tabbar").innerHTML = S.mode === "login" ? "" : tabBar();
+  $("#ptitle").textContent = $("#ntitle").textContent = pageTitle();
   $("#app").dataset.mode = S.mode;
   renderStatus(); renderBanner();
   const v = view();
@@ -2057,14 +2093,66 @@ function cardInsights(p) {
 const P_PROG = '<path d="M4 19.5h16M5.5 15.5l4-4.5 3.5 3 5.5-6.5"/>';
 const P_SET = '<path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>';
 // Una sola barra arriba: secciones del inicio y pantallas de la app, en el orden en que se usan.
-function topBar() {
-  const items = [["sec", "all", "Resumen", SI.all], ["sec", "act", "Actividad", SI.act], ["tab", "train", "Entrenar", SI.train], ["sec", "body", "Cuerpo", SI.body]];
-  if (profile(S.person).glucose) items.push(["sec", "glu", "Glucosa", SI.glu]);
-  items.push(["sec", "nutri", "Agua y suplementos", SI.nutri], ["tab", "prog", "Progreso", SVGI(P_PROG)], ["tab", "settings", "Ajustes", SVGI(P_SET)]);
-  return items.map(([kind, k, n, ic]) => {
-    const on = kind === "tab" ? S.tab === k : S.tab === "home" && S.sec === k;
-    return `<button type="button" id="nav-${k}" ${kind === "tab" ? `data-act="tab" data-t="${k}"` : `data-act="sec" data-k="${k}"`}${on ? ' aria-current="page"' : ""} aria-label="${n}" title="${n}">${ic}</button>`;
-  }).join("");
+// Pestañas de abajo (Hoy, Entreno, Comida, Progreso, Ajustes) y segmentos de Hoy
+const curTab = () => S.tab === "home" ? (S.sec === "nutri" ? "food" : "home") : S.tab;
+const navKey = () => S.tab === "home" ? "home-" + S.sec : S.tab;
+function pageTitle() {
+  if (S.mode === "login") return "Gym de a Dos";
+  return { home: "Hoy", food: "Comida", train: "Entreno", prog: "Progreso", settings: "Ajustes" }[curTab()] || "Hoy";
+}
+function tabBar() {
+  const items = [["home", "Hoy", SI.all], ["train", "Entreno", SI.train], ["food", "Comida", SI.nutri], ["prog", "Progreso", SVGI(P_PROG)], ["settings", "Ajustes", SVGI(P_SET)]], cur = curTab();
+  return items.map(([k, n, ic]) => `<button type="button" id="nav-${k === "food" ? "nutri" : k === "home" ? "all" : k}" data-act="tab" data-t="${k}"${k === cur ? ' aria-current="page"' : ""}>${ic}<span>${n}</span></button>`).join("");
+}
+function segBar() {
+  if (curTab() !== "home") return "";
+  const items = [["all", "Resumen"], ["act", "Actividad"], ["body", "Cuerpo"]];
+  if (profile(S.person).glucose) items.push(["glu", "Glucosa"]);
+  return items.map(([k, n]) => `<button type="button" data-act="sec" data-k="${k}" aria-pressed="${S.sec === k}">${n}</button>`).join("");
+}
+// Cambio de pantalla con transición (View Transitions) y scroll recordado por pestaña
+const reduceMotion = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
+function go(fn) {
+  S.scrollMem[navKey()] = window.scrollY;
+  const run = () => { fn(); render(); window.scrollTo(0, S.scrollMem[navKey()] || 0); updateNavbar(); };
+  if (document.startViewTransition && !reduceMotion()) document.startViewTransition(run); else run();
+}
+function updateNavbar() { const n = $("#navbar"); if (n) n.classList.toggle("on", window.scrollY > 46 && S.mode !== "login"); }
+// Vibración corta al tocar: Android con vibrate; iPhone (iOS 18) con el interruptor nativo escondido
+let hapEl = null;
+function haptic() {
+  try {
+    if (navigator.vibrate) { navigator.vibrate(8); return; }
+    if (!hapEl) { hapEl = document.createElement("label"); hapEl.setAttribute("aria-hidden", "true"); hapEl.style.cssText = "position:fixed;left:-200px;top:0;opacity:0;pointer-events:none"; hapEl.innerHTML = '<input type="checkbox" switch tabindex="-1">'; document.body.appendChild(hapEl); }
+    hapEl.click();
+  } catch (e) {}
+}
+// Cerrar la hoja deslizándola hacia abajo
+function closeSheet() {
+  const sh = $("#sheet .sheet"), sc = $("#sheet .scrim");
+  const fin = () => { S.sheet = null; S.off = null; S.pickId = null; S.foodMeal = null; S.plan = null; if (scanStop) scanStop(); if (document.activeElement) document.activeElement.blur(); render(); };
+  if (!sh || reduceMotion()) return fin();
+  sh.style.transition = "transform .22s cubic-bezier(.4,0,1,1)"; sh.style.transform = "translateY(105%)";
+  if (sc) { sc.style.transition = "opacity .22s ease"; sc.style.opacity = "0"; }
+  setTimeout(fin, 200);
+}
+function sheetDrag() {
+  const box = $("#sheet"); let st = null;
+  box.addEventListener("pointerdown", e => {
+    const sh = e.target.closest(".sheet");
+    if (!sh || !e.target.closest(".grab, .sh-h") || e.target.closest("button, a, input, select, textarea")) return;
+    st = { y: e.clientY, t: Date.now(), sh, dy: 0 }; try { sh.setPointerCapture(e.pointerId); } catch (err) {} sh.style.transition = "none";
+  });
+  box.addEventListener("pointermove", e => {
+    if (!st) return; st.dy = Math.max(0, e.clientY - st.y);
+    st.sh.style.transform = `translateY(${st.dy}px)`; const sc = box.querySelector(".scrim"); if (sc) sc.style.opacity = String(1 - Math.min(1, st.dy / 420));
+  });
+  const end = () => {
+    if (!st) return; const { sh, dy, t } = st, v = dy / Math.max(1, Date.now() - t); st = null;
+    if (dy > 110 || (dy > 30 && v > 0.55)) { closeSheet(); return; }
+    sh.style.transition = "transform .28s cubic-bezier(.2,.9,.3,1)"; sh.style.transform = ""; const sc = box.querySelector(".scrim"); if (sc) { sc.style.transition = "opacity .2s"; sc.style.opacity = ""; }
+  };
+  box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
 }
 const clamp01 = v => Math.max(0, Math.min(1, v || 0));
 function starPts(cx, cy, ro, ri) { const out = []; for (let k = 0; k < 10; k++) { const a = (-90 + k * 36) * Math.PI / 180, r = k % 2 ? ri : ro; out.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`); } return out.join(" "); }
@@ -2166,12 +2254,7 @@ function viewHome() {
       + (hasSupps ? cardSupps(p, prof, d) : `<section class="card g"><h2>Suplementos</h2><p class="small">No hay suplementos activos. Agregalos en Ajustes.</p></section>`)
       + chartCard("Agua", "litros · línea: meta", bars14(rows, "water", prof.waterGoal || 2, cw, v => fmtN(v)));
   } else {
-    const slides = heroSlides(p, prof, d);
     body = feeCard() + dateBar()
-      + `<section class="hero g" aria-label="Resumen del día">
-      <div class="slides" id="slides">${slides.map(s => `<article class="slide"><h2>${s.t}</h2><p>${s.b}</p>${s.extra || ""}${s.btn ? `<div class="act"><button type="button" class="pillbtn" data-act="${s.btn[1]}" data-id="${esc(s.btn[2] || "")}" data-s="${esc(s.btn[2] || "")}">${s.btn[0]}</button></div>` : ""}</article>`).join("")}</div>
-      <div class="dots" id="dots" aria-hidden="true">${slides.map((_, i) => `<i class="${i === S.slide ? "on" : ""}"></i>`).join("")}</div>
-    </section>`
       + spotifyCard()
       + cardTrainToday(p, prof)
       + cardGoal(p, prof)
@@ -2915,17 +2998,22 @@ function bind() {
     const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
     const a = b.dataset.act;
     const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && ae.type !== "checkbox") ae.blur();
+    if (b.matches("[data-write], [data-act=tab], [data-act=sec], [data-act=sheet], [data-act=food-meal], [data-act=fe-q]") && !b.closest(".scrim")) haptic();
     if (a === "profile") { S.menu = !S.menu; render(); }
     else if (a === "profile-close") { S.menu = false; render(); }
     else if (a === "person") { S.person = b.dataset.p; S.menu = false; S.sp = null; setTimeout(spPoll, 50); S.confirm = null; S.slide = 0; S.gluDraft = ""; S.preDraft = ""; saveUI(); render(); window.scrollTo(0, 0); }
-    else if (a === "tab" && (b.dataset.t === "home" || b.dataset.t === "train")) { S.tab = b.dataset.t; S.confirm = null; saveUI(); render(); window.scrollTo(0, 0); setTimeout(spPoll, 50); }
-    else if (a === "tab") { S.tab = b.dataset.t; S.confirm = null; saveUI(); render(); window.scrollTo(0, 0); }
-    else if (a === "sec") { S.sec = b.dataset.k; S.tab = "home"; S.slide = 0; saveUI(); render(); window.scrollTo(0, 0); }
+    else if (a === "tab") {
+      const t = b.dataset.t;
+      if (t === curTab()) { window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); return; }
+      go(() => { if (t === "food") { if (S.sec !== "nutri") S.homeSec = S.sec; S.tab = "home"; S.sec = "nutri"; } else if (t === "home") { S.tab = "home"; if (S.sec === "nutri") S.sec = S.homeSec || "all"; } else S.tab = t; S.confirm = null; S.slide = 0; saveUI(); });
+      if (t === "home" || t === "train") setTimeout(spPoll, 50);
+    }
+    else if (a === "sec") { const k = b.dataset.k; if (k === S.sec && S.tab === "home") return; go(() => { S.sec = k; S.tab = "home"; S.slide = 0; if (k !== "nutri") S.homeSec = k; saveUI(); }); }
     else if (a === "date") { const n = addDays(S.date, +b.dataset.d); if (n <= today()) { S.date = n; S.confirm = null; S.slide = 0; render(); } }
     else if (a === "day") { S.day[S.person] = b.dataset.id; S.confirm = null; render(); }
     else if (a === "go-train") { if (b.dataset.id) S.day[S.person] = b.dataset.id; S.tab = "train"; saveUI(); render(); window.scrollTo(0, 0); }
     else if (a === "sheet") { S.sheet = b.dataset.s || "all"; S.gluTime = ""; renderSheet(); const f = $("#sheet input"); if (f && S.sheet === "steps") setTimeout(() => f.focus(), 80); }
-    else if (a === "sheet-close") { S.sheet = null; S.off = null; S.pickId = null; S.foodMeal = null; if (scanStop) scanStop(); if (document.activeElement) document.activeElement.blur(); render(); }
+    else if (a === "sheet-close") closeSheet();
     else if (a === "water") { const prof = profile(S.person), step = +b.dataset.d * (prof.bottle || 1); editDaily(S.person, S.date, d => { d.water = Math.max(0, Math.round(((d.water || 0) + step) * 100) / 100); if (!d.water) delete d.water; }, 400); render(); }
     else if (a === "supp") {
       const id = b.dataset.id, s = profile(S.person).supps.find(x => x.id === id), x = s ? suppNutr(s) : { p: 0, k: 0, c: 0, g: 0 }; let on = false;
@@ -3029,7 +3117,7 @@ function bind() {
   app.addEventListener("keydown", e => {
     if ((e.key === "Enter" || e.key === " ") && e.target.matches('[role="button"][data-act]')) { e.preventDefault(); e.target.click(); }
     if (e.key === "Escape" && S.menu) { S.menu = false; render(); }
-    else if (e.key === "Escape" && S.sheet) { S.sheet = null; render(); }
+    else if (e.key === "Escape" && S.sheet) closeSheet();
   });
   app.addEventListener("input", e => {
     const t = e.target, f = t.dataset.f; if (!f) return;
@@ -3092,6 +3180,8 @@ function bind() {
   // El contador de ayuno se actualiza cada minuto
   setInterval(() => { if (document.querySelector(".fastcard, .fpill")) scheduleRender(); }, 60000);
   view().addEventListener("toggle", e => { const d = e.target; if (d.matches && d.matches("details[data-day]")) { if (d.open) S.openDays.add(d.dataset.day); else S.openDays.delete(d.dataset.day); } }, true);
+  window.addEventListener("scroll", updateNavbar, { passive: true });
+  sheetDrag();
   view().addEventListener("scroll", e => {
     if (e.target.id !== "slides") return;
     const sl = e.target, i = Math.round(sl.scrollLeft / (sl.clientWidth || 1));
