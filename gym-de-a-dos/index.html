@@ -607,6 +607,27 @@ details.nutr > p{margin:4px 4px 0}
 .thumbs img{width:56px; height:72px; object-fit:cover; border-radius:10px; flex-shrink:0; cursor:pointer; background:var(--card-in)}
 .photobox{position:fixed; inset:0; z-index:60; background:#000; display:grid; place-items:center}
 .photobox img{max-width:100%; max-height:100%; object-fit:contain}
+/* Técnica y mapa de músculos */
+.techbtn{display:inline-flex; align-items:center; gap:4px; border:0; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent); border-radius:999px; padding:4px 10px 4px 8px; font-size:12px; font-weight:700}
+.techbtn svg{width:13px; height:13px; fill:currentColor; stroke:none}
+.techbox{background:#FFFFFF; border-radius:22px; padding:10px; display:grid; place-items:center; min-height:220px; overflow:hidden}
+.techbox img{width:100%; max-width:360px; aspect-ratio:1; object-fit:contain; mix-blend-mode:multiply}
+.techbox p{display:none; color:#536460}
+.techbox.err img{display:none} .techbox.err p{display:block}
+.techmus{display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center; background:var(--card-in); border-radius:18px; padding:10px 14px}
+.techmus .tfig{display:flex; gap:2px} .techmus .body{width:52px; height:auto}
+.techmus p{font-size:14.5px}
+ol.tips{margin:0; padding-left:20px; display:grid; gap:6px; font-size:15px; line-height:1.4}
+.body .bb{fill:color-mix(in srgb, var(--ink) 9%, transparent)}
+.body .mz{fill:color-mix(in srgb, var(--ink) 15%, transparent); stroke:var(--bg); stroke-width:.8}
+.body .mh{fill:#FF4D4D}
+.musmap{padding:16px 10px 14px}
+.musmap .figs{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.musmap figure{margin:0; display:grid; justify-items:center; gap:6px}
+.musmap .body{width:100%; max-width:190px; height:auto; filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
+.musmap figcaption{font-size:13px; font-weight:600; color:var(--ink-2)}
+.mleg{display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; color:var(--ink-2)}
+.mleg i{width:110px; height:7px; border-radius:99px; background:linear-gradient(90deg, rgba(255,77,77,.25), #FF4D4D)}
 .ctxs.meals button{border-style:dashed}
 details.howto > summary{cursor:pointer; font-weight:700; font-size:14.5px; padding:4px 0 8px}
 details.howto[open] > summary{margin-bottom:4px}
@@ -1004,7 +1025,7 @@ const plateCls = p => p === 25 ? "p25" : p === 20 ? "p20" : p === 15 ? "p15" : p
 /* ---------- Estado ---------- */
 const S = {
   person: "braian", tab: "home", day: { braian: null, rocio: null }, date: today(),
-  progEx: { braian: null, rocio: null }, progMode: "ex", docs: {}, mode: "starting", loaded: new Set(),
+  progEx: { braian: null, rocio: null }, progMode: "sum", docs: {}, mode: "starting", loaded: new Set(),
   canWrite: true, err: null, confirm: null, sheet: null, slide: 0,
   gluDraft: "", gluTime: "", gluCtx: null, gluMeal: null, gluNote: "", gluRange: 14, preDraft: "", openDays: new Set(), sec: "all",
   foodDraft: { n: "", p: "", k: "", c: "", g: "", save: false }, foodQ: "", foodOpen: new Set(),
@@ -1948,6 +1969,109 @@ function openPhoto(i) {
     if (error) toast("No se pudo borrar"); else { toast("Foto borrada"); loadPhotos(p); }
   };
 }
+/* --- Técnica de cada ejercicio (animaciones de ExerciseDB, versión abierta) y músculos trabajados --- */
+const MUS_NAME = { chest: "Pecho", shoulders: "Hombros", rear: "Deltoides posterior", biceps: "Bíceps", triceps: "Tríceps", forearms: "Antebrazos", abs: "Abdomen",
+  lats: "Dorsales", upper: "Espalda alta", lower: "Lumbares", glutes: "Glúteos", quads: "Cuádriceps", hams: "Femorales", abductors: "Glúteo medio", adductors: "Aductores", calves: "Gemelos" };
+// id: animación · mus: músculo → peso (1 principal, menos de 1 secundario) · tips: técnica correcta
+const EX_TECH = {
+  hack: { id: "gf3ZjB9", mus: { quads: 1, glutes: 0.6, adductors: 0.3 }, tips: ["Espalda y cadera bien apoyadas en el respaldo.", "Bajá hasta que los muslos pasen la paralela, sin despegar los talones.", "Subí empujando con todo el pie, sin trabar las rodillas arriba."] },
+  prensa: { id: "10Z2DXU", mus: { quads: 1, glutes: 0.6, hams: 0.3 }, tips: ["La cola no se despega del asiento al bajar.", "Rodillas en línea con la punta de los pies.", "Pies más altos y abiertos: más glúteo; más bajos: más cuádriceps."] },
+  "gemelos-prensa": { id: "ykHcWme", mus: { calves: 1 }, tips: ["Solo la punta de los pies en la plataforma.", "Bajá los talones lento hasta estirar del todo.", "Pausa de un segundo arriba, apretando."] },
+  "ext-cuad": { id: "my33uHU", mus: { quads: 1 }, tips: ["El eje de la máquina alineado con la rodilla.", "Estirá del todo y apretá un segundo arriba.", "Bajá controlado, sin dejar caer el peso."] },
+  "sillon-cuad": { id: "my33uHU", mus: { quads: 1 }, tips: ["El eje de la máquina alineado con la rodilla.", "Estirá del todo y apretá un segundo arriba.", "Bajá controlado, sin dejar caer el peso."] },
+  "curl-sentado": { id: "Zg3XY7P", mus: { hams: 1, calves: 0.2 }, tips: ["El rodillo arriba de los talones, rodilla alineada con el eje.", "Llevá los talones bien atrás, sin despegar la cola.", "Volvé lento hasta estirar casi del todo."] },
+  "sillon-femoral": { id: "Zg3XY7P", mus: { hams: 1, calves: 0.2 }, tips: ["El rodillo arriba de los talones, rodilla alineada con el eje.", "Llevá los talones bien atrás, sin despegar la cola.", "Volvé lento hasta estirar casi del todo."] },
+  "banca-mancuerna": { id: "SpYC0Kp", mus: { chest: 1, shoulders: 0.5, triceps: 0.5 }, tips: ["Omóplatos juntos y hacia abajo, pies firmes en el piso.", "Bajá las mancuernas al costado del pecho, codos a unos 45°.", "Empujá hacia arriba juntando un poco las mancuernas."] },
+  "remo-apoyo": { id: "aaXr7ld", mus: { upper: 1, lats: 0.6, biceps: 0.4, rear: 0.4 }, tips: ["Pecho apoyado todo el tiempo, sin balancearte.", "Tirá con los codos hacia atrás y juntá los omóplatos.", "Estirá los brazos del todo al bajar."] },
+  "press-militar": { id: "znQUdHY", mus: { shoulders: 1, triceps: 0.5, upper: 0.2 }, tips: ["Espalda pegada al respaldo, abdomen firme.", "Empezá con las mancuernas a la altura de las orejas.", "Empujá arriba sin arquear la zona lumbar."] },
+  "jalon-neutro": { id: "4c9BhzB", mus: { lats: 1, biceps: 0.5, upper: 0.4 }, tips: ["Pecho arriba e inclinado apenas hacia atrás.", "Llevá el agarre al pecho tirando con los codos.", "Subí lento hasta estirar los dorsales."] },
+  "jalon-pecho": { id: "eYnzaCm", mus: { lats: 1, biceps: 0.5, upper: 0.4, rear: 0.2 }, tips: ["Agarre un poco más ancho que los hombros.", "Bajá la barra al pecho, no detrás de la nuca.", "Subí controlado, sin soltar la tensión."] },
+  "ext-nuca": { id: "2IxROQ1", mus: { triceps: 1 }, tips: ["Codos cerca de la cabeza y apuntando hacia adelante.", "Bajá detrás de la nuca hasta estirar bien el tríceps.", "Solo se mueven los antebrazos."] },
+  "curl-martillo": { id: "2NpxjC1", mus: { biceps: 1, forearms: 0.6 }, tips: ["Palmas mirándose entre sí todo el recorrido.", "Codos pegados al cuerpo, sin balancear.", "Bajá lento, casi hasta estirar."] },
+  "vuelos-lat": { id: "DsgkuIt", mus: { shoulders: 1, upper: 0.2 }, tips: ["Codos apenas flexionados, subí hasta la altura del hombro.", "Guiá con los codos, no con las manos.", "Sin impulso: si tenés que balancearte, bajá el peso."] },
+  bulgaras: { id: "qx4fgX7", mus: { quads: 1, glutes: 0.8, hams: 0.3, adductors: 0.3 }, tips: ["Pie de atrás apoyado en el banco, el de adelante lejos.", "Bajá vertical hasta que la rodilla de atrás casi toque el piso.", "Torso inclinado adelante: más glúteo."] },
+  abductores: { id: "CHpahtl", mus: { abductors: 1, glutes: 0.5 }, tips: ["Espalda apoyada y cola bien atrás en el asiento.", "Abrí las piernas lo más que puedas y pausá un segundo.", "Volvé lento sin que las placas choquen."] },
+  abduccion: { id: "CHpahtl", mus: { abductors: 1, glutes: 0.5 }, tips: ["Espalda apoyada y cola bien atrás en el asiento.", "Abrí las piernas lo más que puedas y pausá un segundo.", "Volvé lento sin que las placas choquen."] },
+  hiperext: { id: "8urJS9b", mus: { lower: 1, glutes: 0.7, hams: 0.5 }, tips: ["La cadera apenas por encima del apoyo.", "Bajá con la espalda recta y subí apretando glúteos.", "Arriba no te pases: el cuerpo en línea recta."] },
+  gemelos: { id: "ykUOVze", mus: { calves: 1 }, tips: ["Hombros bajo las almohadillas, rodillas casi estiradas.", "Bajá los talones hasta estirar del todo.", "Subí en punta de pie y pausá un segundo."] },
+  "press-inclinado-m": { id: "B3Rxp6L", mus: { chest: 1, shoulders: 0.6, triceps: 0.5 }, tips: ["Banco a 30-45°, omóplatos juntos.", "Bajá las mancuernas a la parte alta del pecho.", "Empujá arriba sin chocar las mancuernas."] },
+  "press-inclinado": { id: "B3Rxp6L", mus: { chest: 1, shoulders: 0.6, triceps: 0.5 }, tips: ["Banco a 30-45°, omóplatos juntos.", "Bajá las mancuernas a la parte alta del pecho.", "Empujá arriba sin chocar las mancuernas."] },
+  "remo-banco": { id: "C0MA9bC", mus: { lats: 1, upper: 0.6, biceps: 0.5, rear: 0.3 }, tips: ["Mano y rodilla en el banco, espalda plana.", "Tirá la mancuerna hacia la cadera, no hacia el pecho.", "Estirá del todo abajo sin girar el torso."] },
+  aperturas: { id: "ESOd5Pl", mus: { chest: 1, shoulders: 0.3 }, tips: ["Codos apenas flexionados y fijos todo el recorrido.", "Abrí hasta sentir que estira el pecho, sin pasar el hombro.", "Cerrá como abrazando un árbol."] },
+  "curl-inclinado": { id: "F3xgbjF", mus: { biceps: 1, forearms: 0.3 }, tips: ["Banco a unos 45°, brazos colgando atrás del cuerpo.", "Subí sin adelantar los codos.", "Bajá lento hasta estirar del todo."] },
+  "polea-cuerda": { id: "dU605di", mus: { triceps: 1 }, tips: ["Codos pegados al cuerpo y quietos.", "Abajo, separá las puntas de la cuerda.", "Subí hasta que el antebrazo quede paralelo al piso."] },
+  "ext-triceps": { id: "3ZflifB", mus: { triceps: 1 }, tips: ["Codos pegados al cuerpo y quietos.", "Estirá los brazos del todo y apretá abajo.", "Subí controlado sin despegar los codos."] },
+  sentadilla: { id: "iYzB0Cz", mus: { quads: 1, glutes: 0.8, adductors: 0.4, lower: 0.3 }, tips: ["Barra sobre los trapecios, pies al ancho de hombros.", "Bajá con la espalda recta hasta pasar la paralela.", "Rodillas hacia afuera, en la línea de los pies."] },
+  "hip-thrust": { id: "qg2PGl6", mus: { glutes: 1, hams: 0.4 }, tips: ["Omóplatos apoyados en el banco, barra sobre la cadera.", "Subí hasta que el cuerpo quede recto y pausá apretando.", "Mentón al pecho: mirá hacia adelante, no al techo."] },
+  "remo-barra": { id: "eZyBC3j", mus: { upper: 1, lats: 0.8, biceps: 0.5, lower: 0.3 }, tips: ["Torso inclinado a unos 45°, espalda recta.", "Llevá la barra al ombligo, codos cerca del cuerpo.", "Bajá controlado sin redondear la espalda."] },
+  plancha: { id: "VBAWRPG", mus: { abs: 1, shoulders: 0.2 }, tips: ["Codos debajo de los hombros.", "Cuerpo recto: ni cola arriba ni cadera caída.", "Apretá abdomen y glúteos, respirá normal."] },
+  "peso-muerto": { id: "wQ2c4XD", mus: { hams: 1, glutes: 0.8, lower: 0.6 }, tips: ["Rodillas apenas flexionadas y fijas.", "Bajá la barra pegada a las piernas llevando la cadera atrás.", "Bajá hasta sentir que estiran los femorales, con la espalda recta."] },
+  "patada-gluteo": { id: "Kpajagk", mus: { glutes: 1, hams: 0.4 }, tips: ["Torso firme, apenas inclinado.", "Llevá la pierna atrás apretando el glúteo, sin arquear la espalda.", "Volvé lento, sin dejar caer el peso."] },
+  flexiones: { id: "I4hDWkc", mus: { chest: 1, triceps: 0.5, shoulders: 0.5, abs: 0.2 }, tips: ["Manos un poco más abiertas que los hombros.", "Cuerpo recto de la cabeza a los talones.", "Bajá hasta que el pecho casi toque el piso. Si cuesta, de rodillas."] },
+  "remo-polea": { id: "fUBheHs", mus: { upper: 1, lats: 0.7, biceps: 0.5 }, tips: ["Espalda recta, sin balancear el torso.", "Tirá el agarre al abdomen juntando los omóplatos.", "Estirá los brazos adelante dejando que se abra la espalda."] },
+  posterior: { id: "8DiFDVA", mus: { rear: 1, upper: 0.5 }, tips: ["Torso inclinado casi paralelo al piso.", "Abrí los brazos hacia los costados con los codos apenas flexionados.", "Peso liviano y lento: es un músculo chico."] },
+  "curl-biceps": { id: "3s4NnTh", mus: { biceps: 1, forearms: 0.3 }, tips: ["Codos pegados al cuerpo.", "Girá la palma hacia arriba mientras subís.", "Bajá lento, sin balancear el torso."] },
+  "elev-piernas": { id: "WhuFnR7", mus: { abs: 1 }, tips: ["Zona lumbar pegada al banco o al piso.", "Subí las piernas juntas hasta la vertical.", "Bajá lento sin apoyar los pies entre repeticiones."] },
+  "cinta-lun": { id: "rjiM4L3", mus: {}, tips: ["Inclinación alta y velocidad de caminata rápida.", "No te agarres de la baranda.", "Ritmo en el que puedas hablar pero te cueste un poco."] },
+  "cinta-jue": { id: "rjiM4L3", mus: {}, tips: ["Inclinación alta y velocidad de caminata rápida.", "No te agarres de la baranda.", "Ritmo en el que puedas hablar pero te cueste un poco."] },
+  "cardio-vie": { id: "rjiM4L3", mus: {}, tips: ["Caminata a ritmo rápido.", "Ritmo en el que puedas hablar pero te cueste un poco."] },
+  "cardio-mar": { id: "a8VDgLw", mus: {}, tips: ["Asiento a la altura de la cadera.", "Ritmo constante en el que puedas hablar pero te cueste un poco."] }
+};
+const techOf = key => EX_TECH[key] || null;
+const exByKey = (p, key) => { for (const d of routine(p).days) { const e = d.ex.find(x => x.key === key); if (e) return e; } return null; };
+
+// Cuerpo de frente y de espalda. Cada músculo se pinta según cuánto se trabajó (0 a 1).
+const BODY_BASE = '<ellipse cx="100" cy="32" rx="17" ry="21"/><path d="M91 50h18l2 14H89z"/><path d="M64 70q36-10 72 0l6 34q-4 46-12 86-30 14-60 0-8-40-12-86z"/>';
+const BODY_SIDE = '<path d="M58 74q-14 6-16 34l-4 42q2 6 10 4l8-42q4-20 8-28z"/><path d="M38 150q-6 30-6 56 4 6 10 2l8-38-2-16z"/><ellipse cx="36" cy="218" rx="6" ry="10"/><path d="M70 190q-4 50 2 110l2 18q2 8 12 6l6-24q6-50 8-100z"/><path d="M74 322q-6 38 2 78l4 12h10v-12q4-40-2-76z"/><ellipse cx="84" cy="418" rx="10" ry="6"/>';
+const MUS_FRONT = { shoulders: 'M64 72q-14 4-18 24 6 8 14 4 4-12 10-20z', chest: 'M100 76q-20-4-32 6-4 16 2 28 16 8 30 2z', biceps: 'M47 104q-5 16-5 38 6 4 11-2 4-18 5-36z',
+  forearms: 'M41 152q-6 26-5 48h6q6-22 8-44z', abs: 'M72 116q12 4 16 8l-1 54q-9-6-15-18-2-24 0-44zM90 118h10v66q-6 0-12-4z', abductors: 'M68 186q-6 14-2 36l6-10q0-16 2-22z',
+  quads: 'M74 200q-6 40 2 90 8 10 16 0 6-40 4-84-10-8-22-6z', adductors: 'M96 206q2 34-2 64-2-20-6-46 2-14 8-18z', calves: 'M76 330q-6 30 2 62h6q0-32 2-62z' };
+const MUS_BACK = { rear: 'M64 74q-14 4-18 24 8 4 16-2 4-10 10-16z', lats: 'M70 92q-4 28 6 68 10-10 22-42l2-10-26-24z', triceps: 'M47 102q-6 18-4 44 6 2 11-6 4-20 4-36z',
+  forearms: 'M41 152q-6 26-5 48h6q6-22 8-44z', glutes: 'M100 186q-20-4-30 10-2 22 12 30 14 2 18-8z', hams: 'M74 228q-4 32 4 68 8 6 14-2 6-32 6-66-12 4-24 0z', calves: 'M74 326q-8 24 0 50 6 10 12 0 6-26 2-50z', abductors: 'M68 186q-6 14-2 36l6-10q0-16 2-22z' };
+const MUS_BACK_MID = { upper: 'M100 54l-16 10q-8 6-12 12l28 32 28-32q-4-6-12-12z', lower: 'M90 150h20l2 36H88z' };
+function bodySVG(v, view) {
+  const M = view === "back" ? MUS_BACK : MUS_FRONT, mirror = 'transform="matrix(-1 0 0 1 200 0)"';
+  const mus = (d, k) => { const x = Math.max(0, Math.min(1, v[k] || 0)); return `<path d="${d}" class="mz"/>${x > 0 ? `<path d="${d}" class="mh" fill-opacity="${(0.25 + 0.75 * x).toFixed(2)}"/>` : ""}`; };
+  const side = Object.entries(M).map(([k, d]) => mus(d, k)).join("");
+  const mid = view === "back" ? Object.entries(MUS_BACK_MID).map(([k, d]) => mus(d, k)).join("") : "";
+  return `<svg class="body" viewBox="0 0 200 430" role="img" aria-label="${view === "back" ? "Espalda" : "Frente"}"><g class="bb">${BODY_BASE}${BODY_SIDE}<g ${mirror}>${BODY_SIDE}</g></g>${side}<g ${mirror}>${side}</g>${mid}</svg>`;
+}
+function techSec(p, key) {
+  const t = techOf(key), ex = exByKey(p, key); if (!t) return `<p class="small">Sin animación para este ejercicio.</p>`;
+  const prim = Object.entries(t.mus).filter(([, w]) => w >= 1).map(([k]) => MUS_NAME[k]), sec = Object.entries(t.mus).filter(([, w]) => w < 1 && w >= 0.3).map(([k]) => MUS_NAME[k]);
+  const hasMus = Object.keys(t.mus).length;
+  return `<div class="techbox"><img src="https://static.exercisedb.dev/media/${t.id}.gif" alt="Animación de ${esc(ex ? ex.name : key)}" onerror="this.parentNode.classList.add('err')"><p class="small">La animación necesita internet la primera vez.</p></div>
+    ${hasMus ? `<div class="techmus"><div class="tfig">${bodySVG(t.mus, "front")}${bodySVG(t.mus, "back")}</div><div><p><b>Trabaja:</b> ${esc(prim.join(", "))}</p>${sec.length ? `<p class="small">También: ${esc(sec.join(", "))}</p>` : ""}</div></div>` : ""}
+    <div class="sec"><h3>Cómo hacerlo bien</h3><ol class="tips">${t.tips.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
+    ${ex && ex.note ? `<p class="advice">${esc(ex.note)}</p>` : ""}
+    <p class="small muted">Animación: ExerciseDB</p>`;
+}
+// Series hechas por músculo en un rango de fechas
+function musStats(p, from, to) {
+  const score = {}, sets = {};
+  sessionsOf(p).filter(s => s.date >= from && s.date <= to).forEach(s => Object.entries(s.entries || {}).forEach(([k, en]) => {
+    const n = (en.sets || []).filter(isDone).length, t = techOf(k); if (!n || !t) return;
+    Object.entries(t.mus).forEach(([m, w]) => { score[m] = (score[m] || 0) + n * w; if (w >= 0.5) sets[m] = (sets[m] || 0) + n; });
+  }));
+  const mx = Math.max(0, ...Object.values(score)), v = {};
+  Object.entries(score).forEach(([m, x]) => { v[m] = mx ? x / mx : 0; });
+  return { v, sets };
+}
+function progMuscles() {
+  const p = S.person, week = S.musRange !== "day", t = today(), ws = weekStart(t), from = week ? ws : t;
+  const { v, sets } = musStats(p, from, t), list = Object.entries(sets).sort((a, b) => b[1] - a[1]);
+  // Recién desde el jueves se marca lo que no se tocó en la semana
+  const all = Object.keys(MUS_NAME).filter(k => k !== "forearms"), late = (parseIso(t).getDay() + 6) % 7 >= 3, low = week && late ? all.filter(k => !sets[k]) : [];
+  const seg = `<div class="subnav"><button type="button" data-act="mus-range" data-r="day" aria-pressed="${!week}">Hoy</button><button type="button" data-act="mus-range" data-r="week" aria-pressed="${week}">Esta semana</button></div>`;
+  const chip = n => !week ? "" : n > 20 ? `<span class="chip warn">mucho</span>` : n >= 10 ? `<span class="chip good">ideal</span>` : `<span class="small">de 10-20</span>`;
+  return `${seg}<section class="card g musmap" aria-label="Músculos trabajados">
+    <div class="figs"><figure>${bodySVG(v, "front")}<figcaption>Frente</figcaption></figure><figure>${bodySVG(v, "back")}<figcaption>Espalda</figcaption></figure></div>
+    <div class="mleg"><span>Menos</span><i></i><span>Más trabajado</span></div></section>
+    ${list.length ? `<section class="card g"><div class="row"><h2>Series por músculo</h2><span class="small">${week ? "lunes a hoy" : "hoy"}</span></div>
+      <div class="plist">${list.map(([m, n]) => `<div class="prow"><span class="d">${MUS_NAME[m]}</span><span class="ss"><b>${n}</b> ${n === 1 ? "serie" : "series"} ${chip(n)}</span></div>`).join("")}</div>
+      ${week ? `<p class="small">Para crecer, lo ideal es entre 10 y 20 series por semana para cada músculo.${low.length && low.length < all.length ? ` Sin trabajar esta semana: ${low.map(k => MUS_NAME[k].toLowerCase()).join(", ")}.` : ""}</p>` : ""}</section>`
+    : `<section class="card g"><p class="small">${week ? "Esta semana todavía no hay series cargadas." : "Hoy todavía no cargaste series."} Cuando las cargues en Entreno, los músculos se pintan solos.</p></section>`}`;
+}
 // Fecha estimada para llegar a la meta al ritmo de la última semana
 function goalEta(cur, goal, delta) {
   if (delta == null || delta > -0.05 || cur <= goal) return "";
@@ -2443,8 +2567,11 @@ function renderSheet() {
   if (isEditing() && box.contains(document.activeElement)) return;
   document.documentElement.style.overflow = "hidden";
   const k = S.sheet, p = S.person, prof = profile(p), d = getDaily(p, S.date);
+  const tk = String(k).startsWith("tech:") ? k.slice(5) : null, tex = tk ? exByKey(p, tk) : null;
   const titles = { all: "Registro del día", steps: "Pasos", weight: "Peso y cintura", glucose: "Glucosa", food: "Comidas" };
+  if (tk) titles[k] = tex ? tex.name : "Técnica";
   const parts = [];
+  if (tk) parts.push(techSec(p, tk));
   if (k === "all" || k === "steps") parts.push(secSteps(p, prof, d));
   if (k === "all" || k === "food") parts.push(secFood(p, prof, d, k === "food"));
   if (k === "all") parts.push(`<div class="sec"><h3>Agua</h3>${waterCard(prof, d, "s")}</div>`);
@@ -2560,7 +2687,7 @@ function exCard(p, day, ex, sess, path) {
   const isPlate = ex.type === "barra" || ex.type === "discos";
   const tgt = ex.type === "cardio" ? esc(ex.reps || "Libre") : `${ex.sets}×${esc(ex.reps)}`;
   return `<article class="ex g${doneCount >= (ex.type === "cardio" ? 1 : ex.sets) ? " done" : ""}" data-card="${esc(ex.key)}">
-    <div class="exh"><div class="exl"><span class="exi" style="--exc:var(--${EX_COLOR[ex.type] || "v-teal"})">${SVGI(ex.type === "cardio" ? P_RUN : P_DUMB)}</span><div class="exm"><h3 class="exn">${esc(ex.name)}</h3><div class="meta"><span class="badge">${T.label}${ex.type === "barra" ? ` ${fmtN(ex.bar ?? 20)} kg` : ""}</span>${ex.note ? `<span>${esc(ex.note)}</span>` : ""}</div></div></div>
+    <div class="exh"><div class="exl"><span class="exi" style="--exc:var(--${EX_COLOR[ex.type] || "v-teal"})">${SVGI(ex.type === "cardio" ? P_RUN : P_DUMB)}</span><div class="exm"><h3 class="exn">${esc(ex.name)}</h3><div class="meta">${techOf(ex.key) ? `<button type="button" class="techbtn" data-act="sheet" data-s="tech:${esc(ex.key)}">${SVGI('<path d="M8 5.5v13l11-6.5z"/>')}Ver técnica</button>` : ""}<span class="badge">${T.label}${ex.type === "barra" ? ` ${fmtN(ex.bar ?? 20)} kg` : ""}</span>${ex.note ? `<span>${esc(ex.note)}</span>` : ""}</div></div></div>
       <div class="target" title="Objetivo">${tgt}</div></div>
     ${ssLine(day, ex)}
     <div class="last">${esc(lastTxt)}${hint ? `<span class="chip ${hint.cls}">${esc(hint.txt)}</span>` : ""}</div>
@@ -2652,8 +2779,10 @@ function historyOf(p, key) {
   return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.updated || 0) - (b.updated || 0));
 }
 function viewProg() {
-  const seg = `<div class="seg g" role="group" aria-label="Vista"><button type="button" data-act="prog-mode" data-m="ex" aria-pressed="${S.progMode === "ex"}">Ejercicios</button><button type="button" data-act="prog-mode" data-m="body" aria-pressed="${S.progMode === "body"}">Cuerpo y hábitos</button></div>`;
-  return `<div class="stack">${cardStreaks(S.person)}${cardInsights(S.person)}${cardPerf(S.person)}${seg}${S.progMode === "ex" ? progExercises() : progBody()}</div>`;
+  const m = ["sum", "mus", "ex", "body"].includes(S.progMode) ? S.progMode : "sum";
+  const seg = `<div class="subnav" role="group" aria-label="Vista">${[["sum", "Resumen"], ["mus", "Músculos"], ["ex", "Ejercicios"], ["body", "Cuerpo"]].map(([k, n]) => `<button type="button" data-act="prog-mode" data-m="${k}" aria-pressed="${m === k}">${n}</button>`).join("")}</div>`;
+  const body = m === "mus" ? progMuscles() : m === "ex" ? progExercises() : m === "body" ? progBody() : cardStreaks(S.person) + cardInsights(S.person) + cardPerf(S.person);
+  return `<div class="stack">${seg}${body}</div>`;
 }
 function progExercises() {
   const p = S.person, exs = allExercises(p);
@@ -3167,7 +3296,8 @@ function bind() {
     }
     else if (a === "confirm-yes") confirmYes();
     else if (a === "confirm-no") { S.confirm = null; render(); }
-    else if (a === "prog-mode") { S.progMode = b.dataset.m; render(); }
+    else if (a === "prog-mode") { const m = b.dataset.m; if (m === S.progMode) return; go(() => { S.progMode = m; }); }
+    else if (a === "mus-range") { S.musRange = b.dataset.r; render(); }
     else if (a === "sp-add") { const id = "s" + uid(); profileEdit(pr => { pr.supps = pr.supps.concat([{ id, name: "Nuevo suplemento", dose: "", when: "Día", active: true }]); }); render(); const el = document.getElementById("sn-" + id); if (el) { el.focus(); el.select(); } }
     else if (a === "sp-del") { const id = b.closest("[data-sid]").dataset.sid; profileEdit(pr => { pr.supps = pr.supps.filter(s => s.id !== id); }); render(); }
     else if (a === "install") { if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; render(); }); } }

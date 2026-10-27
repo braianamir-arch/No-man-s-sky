@@ -1,6 +1,6 @@
 // Guarda la app en el teléfono para que abra sin internet.
 // Al cambiar cualquier archivo de la app, subí el número de CACHE para que los teléfonos bajen la versión nueva.
-const CACHE = "gym-de-a-dos-v31";
+const CACHE = "gym-de-a-dos-v32";
 const SHELL = ["./", "./index.html", "./config.js", "./vendor/supabase.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
@@ -8,7 +8,7 @@ self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== "gym-de-a-dos-tecnica").map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 function fresh(req) {
   return caches.open(CACHE).then(c => c.match(req).then(hit => {
@@ -26,5 +26,7 @@ self.addEventListener("fetch", e => {
       .catch(() => caches.match("./index.html")));
     return;
   }
-  if (url.origin === location.origin || url.host === "fonts.googleapis.com" || url.host === "fonts.gstatic.com") e.respondWith(fresh(req));
+  // Animaciones de técnica (ExerciseDB): se bajan una sola vez y quedan guardadas
+  if (url.host === "static.exercisedb.dev") { e.respondWith(caches.open("gym-de-a-dos-tecnica").then(c => c.match(req).then(hit => hit || fetch(req).then(res => { if (res && (res.ok || res.type === "opaque")) c.put(req, res.clone()); return res; })))); return; }
+  if (url.origin === location.origin) e.respondWith(fresh(req));
 });
