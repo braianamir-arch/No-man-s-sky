@@ -37,7 +37,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --shadow:0 10px 30px -10px rgba(40,70,60,.18);
   --f-display:-apple-system,"SF Pro Display",BlinkMacSystemFont,"Google Sans","Roboto",system-ui,sans-serif;
   --f-body:-apple-system,"SF Pro Text",BlinkMacSystemFont,"Google Sans Text","Roboto",system-ui,sans-serif;
-  --seg-on:#FFFFFF; --tabh:58px; --bar:rgba(246,248,246,.93);
+  --seg-on:#FFFFFF; --tabh:58px; --bar:rgba(246,248,246,.97);
   --r-lg:22px; --r:18px; --r-sm:14px;
 }
 @media (prefers-color-scheme: dark){
@@ -51,7 +51,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
     --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
     --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
     --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.93);
+    --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.97);
   }
 }
 :root[data-theme="dark"]{
@@ -64,7 +64,7 @@ try { if (matchMedia("(prefers-color-scheme: light)").matches) document.getEleme
   --ring-steps:#B6F04A; --ring-water:#3FD3F0; --ring-train:#B07BFF; --hot:#FF6A55;
   --good:#4ADE94; --warn:#F2B84B; --bad:#FF7A6E;
   --p25:#E0464C; --p20:#4A7DE6; --p15:#E8BE3A; --p10:#3BAA6E; --p5:#E9EBEF; --psm:#7C8494;
-  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.93);
+  --shadow:0 18px 40px -18px rgba(0,0,0,.6); color-scheme:dark; --seg-on:rgba(255,255,255,.17); --bar:rgba(20,24,23,.97);
 }
 *{box-sizing:border-box}
 body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.45;
@@ -164,17 +164,34 @@ img{-webkit-user-drag:none}
 .subnav:empty{display:none}
 .subnav button{flex:1; min-width:0; height:32px; border:0; background:transparent; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px}
 .subnav button[aria-pressed="true"]{background:var(--seg-on); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04)}
-/* Barra de pestañas abajo */
-.tabbar{--dock:var(--bar)}
-.tabbar{position:fixed; left:0; right:0; bottom:0; z-index:9; display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
-  height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:max(6px, calc((100% - 640px) / 2));
-  background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border-top:.5px solid var(--line); view-transition-name:tabbar}
+/* Barra de pestañas abajo: burbuja que salta a la pestaña elegida y muesca curva en la barra debajo de ella */
+@property --ti{syntax:"<number>"; inherits:true; initial-value:0}
+.tabbar{--dock:var(--bar); --pl:max(6px, calc((100vw - 640px) / 2)); --tx:calc(var(--pl) + (var(--ti) + .5) * (100% - 2 * var(--pl)) / 5);
+  position:fixed; left:0; right:0; bottom:0; z-index:9; display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
+  height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:var(--pl); view-transition-name:tabbar;
+  transition:--ti .46s cubic-bezier(.45,1.35,.4,1)}
 .tabbar:empty{display:none}
-.tabbar button{border:0; background:transparent; display:grid; justify-items:center; align-content:center; gap:3px; color:var(--ink-3); font-size:10.5px; font-weight:600; letter-spacing:.01em; padding:0}
-.tabbar button svg{width:25px; height:25px; stroke-width:1.7}
+/* fondo de la barra con la muesca recortada (máscara con una curva suave) */
+.tabbar::before{content:""; position:absolute; inset:0; z-index:-1; background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
+  border-top:.5px solid var(--line); box-shadow:0 -6px 24px rgba(0,0,0,.08);
+  --notch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='124' height='40'%3E%3Cpath d='M0 0C22 0 26 36 62 36S102 0 124 0Z'/%3E%3C/svg%3E");
+  -webkit-mask:var(--notch) calc(var(--tx) - 62px) -1px / 124px 40px no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:var(--notch) calc(var(--tx) - 62px) -1px / 124px 40px no-repeat exclude, linear-gradient(#000 0 0)}
+.tbub{position:absolute; top:-25px; left:calc(var(--tx) - 26px); width:52px; height:52px; border-radius:50%; display:grid; place-items:center; pointer-events:none;
+  background:radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--accent) 70%, #FFFFFF), var(--accent) 60%); color:var(--on-accent);
+  box-shadow:0 10px 22px -6px color-mix(in srgb, var(--accent) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.35)}
+.tbub svg{width:24px; height:24px; stroke-width:2.2}
+.tabbar button{border:0; background:transparent; display:grid; justify-items:center; align-content:end; gap:3px; color:var(--ink-3); font-size:10.5px; font-weight:600; letter-spacing:.01em; padding:0 0 9px}
+.tabbar button svg{width:25px; height:25px; stroke-width:1.7; transition:opacity .2s ease, transform .3s cubic-bezier(.3,.7,.3,1)}
 .tabbar button[aria-current="page"]{color:var(--accent)}
-.tabbar button[aria-current="page"] svg{stroke-width:2.2}
-.tabbar button[aria-current="page"] .tdot{transform:scaleX(1)}
+.tabbar button[aria-current="page"] svg{opacity:0; transform:translateY(-14px) scale(.6)}
+@media (prefers-reduced-motion: no-preference){
+  .tbub.jump{animation:tjump .46s cubic-bezier(.3,.7,.3,1)}
+  .tbub.jump svg{animation:tpop .46s cubic-bezier(.3,1.5,.5,1)}
+  @keyframes tjump{0%{transform:none} 45%{transform:translateY(-16px) scale(.92)} 100%{transform:none}}
+  @keyframes tpop{0%,35%{opacity:0; transform:scale(.4)} 100%{opacity:1; transform:none}}
+}
+@media (prefers-reduced-motion: reduce){ .tabbar{transition:none} }
 body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--top)}
 .sechead{display:grid; gap:6px; padding:0 4px 2px}
 .sechead h2{display:none}
@@ -183,7 +200,7 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 
 /* Navegación inferior */
 .dock{position:fixed; left:0; right:0; bottom:0; z-index:8; display:flex; justify-content:flex-end; align-items:center; gap:10px; pointer-events:none;
-  padding-left:max(12px, env(safe-area-inset-left, 0px)); padding-right:max(12px, env(safe-area-inset-right, 0px)); padding-bottom:calc(var(--tabh) + 14px + env(safe-area-inset-bottom, 0px)); view-transition-name:dock}
+  padding-left:max(12px, env(safe-area-inset-left, 0px)); padding-right:max(12px, env(safe-area-inset-right, 0px)); padding-bottom:calc(var(--tabh) + 34px + env(safe-area-inset-bottom, 0px)); view-transition-name:dock}
 .dock > *{pointer-events:auto}
 #app[data-mode="login"] .tabbar{display:none}
 .fab{width:56px; height:56px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; border:1px solid var(--card-line); background:var(--dock); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); box-shadow:0 10px 30px rgba(0,0,0,.12)}
@@ -1321,7 +1338,7 @@ function render() {
   $("#who").className = "whoball p-" + S.person; $("#who-av").textContent = PEOPLE[S.person].name[0];
   $("#menu").innerHTML = S.mode === "login" ? "" : profileMenu();
   $("#secbar").innerHTML = S.mode === "login" ? "" : segBar();
-  $("#tabbar").innerHTML = S.mode === "login" ? "" : tabBar();
+  renderTabbar();
   $("#ptitle").textContent = pageTitle();
   const sub = S.tab === "settings" && !!S.setPage && S.mode !== "login"; $("#hback").hidden = !sub; $("#hsub").hidden = sub;
   $("#app").dataset.mode = S.mode;
@@ -2116,9 +2133,22 @@ function pageTitle() {
   if (t === "settings" && S.setPage) return SET_TITLE[S.setPage] || "Ajustes";
   return { food: "Comida", train: "Entreno", prog: "Progreso", settings: "Ajustes" }[t] || "Hoy";
 }
-function tabBar() {
-  const items = [["home", "Hoy", SI.all], ["train", "Entreno", SI.train], ["food", "Comida", SI.nutri], ["prog", "Progreso", SVGI(P_PROG)], ["settings", "Ajustes", SVGI(P_SET)]], cur = curTab();
-  return items.map(([k, n, ic]) => `<button type="button" id="nav-${k === "food" ? "nutri" : k === "home" ? "all" : k}" data-act="tab" data-t="${k}"${k === cur ? ' aria-current="page"' : ""}>${ic}<span>${n}</span></button>`).join("");
+const TABS = () => [["home", "Hoy", SI.all], ["train", "Entreno", SI.train], ["food", "Comida", SI.nutri], ["prog", "Progreso", SVGI(P_PROG)], ["settings", "Ajustes", SVGI(P_SET)]];
+function renderTabbar() {
+  const bar = $("#tabbar");
+  if (S.mode === "login") { bar.innerHTML = ""; return; }
+  const items = TABS(), cur = curTab(), i = Math.max(0, items.findIndex(x => x[0] === cur));
+  if (!bar.querySelector(".tbub")) {
+    bar.innerHTML = items.map(([k, n, ic]) => `<button type="button" id="nav-${k === "food" ? "nutri" : k === "home" ? "all" : k}" data-act="tab" data-t="${k}">${ic}<span>${n}</span></button>`).join("") + `<span class="tbub" aria-hidden="true"></span>`;
+    bar.style.setProperty("--ti", i); bar.dataset.i = i;
+  }
+  bar.querySelectorAll("button").forEach((b, k) => { if (k === i) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  const bub = bar.querySelector(".tbub");
+  if (+bar.dataset.i !== i || !bub.innerHTML) {
+    bub.innerHTML = items[i][2];
+    if (bar.dataset.i != null && +bar.dataset.i !== i) { bub.classList.remove("jump"); void bub.offsetWidth; bub.classList.add("jump"); }
+    bar.dataset.i = i; bar.style.setProperty("--ti", i);
+  }
 }
 function segBar() {
   if (curTab() !== "home") return "";
