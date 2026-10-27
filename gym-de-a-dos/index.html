@@ -166,17 +166,21 @@ img{-webkit-user-drag:none}
 .subnav button[aria-pressed="true"]{background:var(--seg-on); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04)}
 /* Barra de pestañas abajo: burbuja que salta a la pestaña elegida y muesca curva en la barra debajo de ella */
 @property --ti{syntax:"<number>"; inherits:true; initial-value:0}
-.tabbar{--dock:var(--bar); --pl:max(6px, calc((100vw - 640px) / 2)); --tx:calc(var(--pl) + (var(--ti) + .5) * (100% - 2 * var(--pl)) / 5);
+.tabbar{--dock:var(--bar); --pl:max(6px, calc((100vw - 640px) / 2)); --tx:calc(var(--pl) + (var(--ti) + .5) * (100vw - 2 * var(--pl)) / 5);
   position:fixed; left:0; right:0; bottom:0; z-index:9; display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
   height:calc(var(--tabh) + env(safe-area-inset-bottom, 0px)); padding-bottom:env(safe-area-inset-bottom, 0px); padding-inline:var(--pl); view-transition-name:tabbar;
   transition:--ti .46s cubic-bezier(.45,1.35,.4,1)}
 .tabbar:empty{display:none}
+/* fondo de la barra con la muesca justo debajo de la burbuja; se mueve junto con ella */
 .tabbar::before{content:""; position:absolute; inset:0; z-index:-1; background:var(--dock); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
-  border-top:.5px solid var(--line); box-shadow:0 -6px 24px rgba(0,0,0,.08)}
-.tbub{position:absolute; top:-24px; left:calc(var(--tx) - 26px); width:52px; height:52px; border-radius:50%; display:grid; place-items:center; pointer-events:none;
+  border-top:.5px solid var(--line);
+  --notch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='104' height='32'%3E%3Cpath d='M0 0C18 0 21 30 52 30S86 0 104 0Z'/%3E%3C/svg%3E");
+  -webkit-mask:var(--notch) left calc(var(--tx) - 52px) top -1px / 104px 32px no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:var(--notch) left calc(var(--tx) - 52px) top -1px / 104px 32px no-repeat exclude, linear-gradient(#000 0 0)}
+.tbub{position:absolute; top:-19px; left:calc(var(--tx) - 22px); width:44px; height:44px; border-radius:50%; display:grid; place-items:center; pointer-events:none;
   background:radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--accent) 70%, #FFFFFF), var(--accent) 60%); color:var(--on-accent);
-  box-shadow:0 0 0 6px var(--bar), 0 12px 24px -6px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 1px 0 rgba(255,255,255,.35)}
-.tbub svg{width:24px; height:24px; stroke-width:2.2}
+  box-shadow:0 8px 18px -6px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 1px 0 rgba(255,255,255,.35)}
+.tbub svg{width:21px; height:21px; stroke-width:2.2}
 .tabbar button{border:0; background:transparent; display:grid; justify-items:center; align-content:end; gap:3px; color:var(--ink-3); font-size:10.5px; font-weight:600; letter-spacing:.01em; padding:0 0 9px}
 .tabbar button svg{width:25px; height:25px; stroke-width:1.7; transition:opacity .2s ease, transform .3s cubic-bezier(.3,.7,.3,1)}
 .tabbar button[aria-current="page"]{color:var(--accent)}
