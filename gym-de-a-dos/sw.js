@@ -1,8 +1,8 @@
 // Guarda la app en el teléfono para que abra sin internet.
 // Al cambiar cualquier archivo de la app, subí el número de CACHE para que los teléfonos bajen la versión nueva.
-const CACHE = "gym-de-a-dos-v32";
+const CACHE = "gym-de-a-dos-v33";
 const SHELL = ["./", "./index.html", "./config.js", "./vendor/supabase.js", "./manifest.webmanifest",
-  "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
+  "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
