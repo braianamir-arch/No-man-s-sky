@@ -552,6 +552,8 @@ details.fmore[open] > summary{margin-bottom:8px}
 .mblock .mh{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
 .mblock .mh b{font-size:14.5px}
 .mblock .ghost{justify-self:start; font-size:12.5px}
+.oilrow{display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding-top:4px}
+.oilrow .small{margin-right:2px}
 .aiit{grid-template-columns:32px minmax(0,1fr) auto !important}
 .aiit .nm small{display:block; font-size:12px; color:var(--ink-2); white-space:normal}
 .aiit .ck{width:24px; height:24px; border-radius:50%; border:2px solid var(--ink-3); display:grid; place-items:center; padding:0; background:transparent}
@@ -854,6 +856,10 @@ const FOOD_DB = [
   { id: "sec", em: "🥜", t: "Frutos secos y semillas", it: [
     ["Maní", "30 g", 7.5, 170, 5, 14.5, 30], ["Mantequilla de maní", "1 cda · 16 g", 4, 95, 3, 8, 16], ["Almendras", "30 g", 6, 175, 6, 15, 30],
     ["Nueces", "30 g", 4.5, 195, 4, 19.5, 30], ["Mix de frutos secos", "30 g", 5, 180, 7, 15, 30], ["Semillas de chía", "1 cda", 2, 60, 5, 3.7, 12]] },
+  { id: "gra", em: "🫒", t: "Aceites y grasas", it: [
+    ["Aceite de girasol", "1 cda · 15 ml", 0, 120, 0, 13.6, 14], ["Aceite de oliva", "1 cda · 15 ml", 0, 120, 0, 13.5, 14], ["Aceite (cucharadita)", "1 cdita · 5 ml", 0, 40, 0, 4.5, 4.5],
+    ["Aceite en aerosol", "1 rociada · 1 s", 0, 7, 0, 0.8, 0.8], ["Manteca", "1 cda · 14 g", 0.1, 100, 0, 11.4, 14], ["Manteca (cucharadita)", "1 cdita · 5 g", 0, 36, 0, 4, 5],
+    ["Mayonesa", "1 cda · 15 g", 0.2, 100, 0.1, 11, 15], ["Mayonesa light", "1 cda · 15 g", 0.1, 45, 1.5, 4.5, 15], ["Crema de leche", "1 cda · 15 g", 0.3, 50, 0.5, 5.3, 15]] },
   { id: "pla", em: "🍽️", t: "Platos", it: [
     ["Milanesa con puré", "1 plato", 30, 650, 55, 30, null], ["Pollo al horno con papas", "1 plato", 35, 550, 45, 18, null], ["Asado", "250 g", 50, 700, 0, 52, 250],
     ["Guiso de lentejas", "1 plato", 22, 450, 60, 12, null], ["Fideos con salsa y queso", "1 plato", 15, 480, 75, 12, null], ["Hamburguesa completa", "con pan", 28, 550, 40, 28, null],
@@ -908,6 +914,9 @@ const MICRO_TAB = {
   "Verduras salteadas": [4, 6, 0.8, 200, 60, 1.5, 550, 40, 40, 0, 0],
   "Maní": [2.6, 1.4, 2, 5, 28, 1.4, 200, 50, 0, 0, 0], "Mantequilla de maní": [1, 1.5, 1.6, 70, 7, 0.3, 90, 25, 0, 0, 0], "Almendras": [3.5, 1.3, 1.1, 0, 80, 1.1, 220, 80, 0, 0, 0],
   "Nueces": [2, 0.8, 1.8, 1, 30, 0.9, 130, 47, 0.4, 0, 0], "Mix de frutos secos": [2.5, 2, 1.8, 50, 30, 1, 200, 55, 0, 0, 0], "Semillas de chía": [4, 0, 0.4, 2, 75, 0.9, 48, 40, 0, 0, 0],
+  "Aceite de girasol": [0, 0, 1.4, 0, 0, 0, 0, 0, 0, 0, 0], "Aceite de oliva": [0, 0, 1.9, 0, 0, 0.1, 0, 0, 0, 0, 0], "Aceite (cucharadita)": [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Aceite en aerosol": [0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0], "Manteca": [0, 0, 7.2, 2, 3, 0, 3, 0, 0, 0.2, 0], "Manteca (cucharadita)": [0, 0, 2.6, 1, 1, 0, 1, 0, 0, 0.1, 0],
+  "Mayonesa": [0, 0.1, 1.6, 90, 1, 0, 3, 0, 0, 0, 0], "Mayonesa light": [0, 1, 0.5, 120, 1, 0, 5, 0, 0, 0, 0], "Crema de leche": [0, 0.5, 3.4, 5, 10, 0, 15, 1, 0, 0, 0],
   "Milanesa con puré": [3, 4, 9, 900, 120, 3.5, 900, 60, 10, 0.3, 2], "Pollo al horno con papas": [4, 2, 5, 500, 40, 2.5, 1100, 70, 20, 0.3, 0.6], "Asado": [0, 0, 21, 180, 30, 6, 750, 50, 0, 0.3, 6],
   "Guiso de lentejas": [15, 6, 4, 900, 60, 6, 900, 80, 10, 0, 0.5], "Fideos con salsa y queso": [5, 10, 5, 700, 180, 2.5, 500, 60, 10, 0, 0.3], "Hamburguesa completa": [2.5, 8, 11, 1000, 150, 4, 500, 40, 4, 0.2, 2.5],
   "Wrap de pollo": [3, 4, 4, 900, 100, 2.5, 450, 40, 5, 0.1, 0.3], "Tarta de verdura": [2.5, 2, 7, 500, 150, 2, 350, 30, 8, 0.3, 0.3], "Empanada de carne": [1.5, 2, 6, 500, 20, 1.8, 200, 20, 1, 0.1, 0.8],
@@ -1509,13 +1518,14 @@ function scaled(f, q, grams) {
   if (f.mi) out.mi = Object.fromEntries(Object.entries(f.mi).map(([k, v]) => [k, (+v || 0) * m]));
   return out;
 }
-function addFoods(items) {
+function addFoods(items, meal) {
   if (!items.length) return;
-  const m = curMeal(), t = S.date === today() ? nowHM() : MEAL_T[m];
+  const m = meal || curMeal(), t = S.date === today() ? nowHM() : MEAL_T[m];
   const rmi = mi => mi ? Object.fromEntries(Object.entries(mi).map(([k, v]) => [k, Math.round((+v || 0) * 10) / 10])) : null;
   editDaily(S.person, S.date, d => { d.food = (d.food || []).concat(items.map(x => Object.assign({ id: uid(), n: x.n, p: r1(x.p), k: Math.round(+x.k || 0), c: r1(x.c), g: r1(x.g), t, m }, x.mi ? { mi: rmi(x.mi) } : {}))); }, 300);
   const P = r1(items.reduce((a, x) => a + (+x.p || 0), 0));
-  toast(items.length > 1 ? `+${items.length} alimentos · ${fmtN(P)} g de proteína` : `+${fmtN(P)} g de proteína`);
+  const K = Math.round(items.reduce((a, x) => a + (+x.k || 0), 0));
+  toast(items.length > 1 ? `+${items.length} alimentos · ${fmtN(P)} g de proteína` : P ? `+${fmtN(P)} g de proteína` : `+${fmtInt(K)} kcal`);
 }
 function cardFood(p, prof, d) {
   const t = foodTot(d), G = macroGoals(prof, d), g = G.p, n = (d.food || []).length;
@@ -1589,6 +1599,12 @@ function offBox() {
   else if (O && O.state === "found") h += `<div class="fcard"><div class="row"><h3>${esc(O.item.n)}</h3><button type="button" class="ghost" data-act="off-clear">Cerrar</button></div><p class="small">Cada 100 g: ${esc(macTxt({ p: O.item.p100, k: O.item.k100, c: O.item.c100, g: O.item.g100 }))}</p>${editorHtml(O.item, "off")}</div>`;
   return h;
 }
+// Recordatorio del aceite en almuerzo y cena: es lo que más se olvida cargar
+const OIL_OPTS = [["Aceite (cucharadita)", 1, "1 cdita"], ["Aceite de girasol", 1, "1 cda"], ["Aceite de girasol", 2, "2 cdas"]];
+function oilRow(m, items) {
+  if (!["almuerzo", "cena"].includes(m) || items.some(f => /aceite|manteca/i.test(f.n))) return "";
+  return `<div class="oilrow"><span class="small">🫒 ¿Llevó aceite?</span>${OIL_OPTS.map(([n, q, l], i) => { const f = FOOD_ALL.find(x => x.n === n); return `<button type="button" class="fchip" data-act="oil-add" data-m="${m}" data-i="${i}" data-write>${l} <small>${fmtInt(f.k * q)} kcal</small></button>`; }).join("")}</div>`;
+}
 function secFood(p, prof, d, full) {
   const t = foodTot(d), G = macroGoals(prof, d), F = S.foodDraft, m = curMeal();
   const list = (d.food || []).slice().sort((a, b) => a.t < b.t ? -1 : 1);
@@ -1610,7 +1626,7 @@ function secFood(p, prof, d, full) {
     const st = it.reduce(sumMac, { p: 0, k: 0, c: 0, g: 0 }), yt = yit.reduce(sumMac, { p: 0, k: 0, c: 0, g: 0 });
     const save = it.length ? S.plateMeal === k ? `<div class="psave"><input class="tin" data-f="plate-name" value="${esc(S.plateName)}" aria-label="Nombre del plato" autocomplete="off"><button type="button" class="pillbtn acc" data-act="plate-save" data-m="${k}" data-write>Guardar</button><button type="button" class="ghost" data-act="plate-cancel">✕</button></div>` : "" : "";
     return `<div class="mblock"><div class="mh"><b>${MEAL_ICON[k]} ${l} ${gradeBadge(mealGrade(it))}</b>${it.length ? `<span class="small">${fmtN(r1(st.p))} g · ${fmtInt(st.k)} kcal${S.plateMeal === k ? "" : ` <button type="button" class="linkbtn" data-act="plate-start" data-m="${k}" data-write>Guardar plato</button>`}</span>` : ""}</div>${save}
-      ${it.length ? `<div class="flog">${it.map(f => `<div><span class="muted">${esc(f.t)}</span><span class="nm">${esc(f.n)}</span><span class="small"><b>${fmtN(f.p)} g</b> · ${fmtInt(f.k)}</span><button type="button" data-act="food-del" data-id="${esc(f.id)}" data-write aria-label="Quitar ${esc(f.n)}">${ICON.x}</button></div>`).join("")}</div>`
+      ${it.length ? `<div class="flog">${it.map(f => `<div><span class="muted">${esc(f.t)}</span><span class="nm">${esc(f.n)}</span><span class="small"><b>${fmtN(f.p)} g</b> · ${fmtInt(f.k)}</span><button type="button" data-act="food-del" data-id="${esc(f.id)}" data-write aria-label="Quitar ${esc(f.n)}">${ICON.x}</button></div>`).join("")}</div>${oilRow(k, it)}`
         : `<button type="button" class="ghost" data-act="meal-copy" data-m="${k}" data-write>Repetir ${l.toLowerCase()} de ayer · ${fmtN(r1(yt.p))} g · ${fmtInt(yt.k)} kcal</button>`}</div>`;
   }).join("");
   const other = `<details class="fmore"${F.n || F.p ? " open" : ""}><summary>Cargar a mano</summary><div class="foodform"><label class="lbl sm" for="fd-n">Nombre<input class="tin" id="fd-n" data-f="food-n" value="${esc(F.n)}" placeholder="Ej.: milanesa con ensalada" autocomplete="off"></label>
@@ -3227,6 +3243,7 @@ function bind() {
     else if (a === "glu-meal") { S.gluMeal = b.dataset.m; renderSheet(); }
     else if (a === "perf-toggle") { S.perfOpen = !S.perfOpen; render(); }
     else if (a === "glu-range") { S.gluRange = +b.dataset.n; render(); }
+    else if (a === "oil-add") { const [n, q] = OIL_OPTS[+b.dataset.i] || [], f = FOOD_ALL.find(x => x.n === n); if (!f) return; addFoods([scaled(f, q)], b.dataset.m); render(); }
     else if (a === "food-add" || a === "db-add") { const f = (a === "db-add" ? FOOD_ALL : profile(S.person).foods).find(x => x.id === b.dataset.id); if (!f) return; addFoods([scaled(f, 1)]); render(); }
     else if (a === "rec-add") { const f = recentFoods(S.person, profile(S.person))[+b.dataset.i]; if (!f) return; addFoods([f]); render(); }
     else if (a === "fe-open") { const id = b.dataset.id; S.pickId = S.pickId === id ? null : id; S.feQ = 1; S.feG = ""; renderSheet(); }
