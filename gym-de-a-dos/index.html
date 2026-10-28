@@ -808,7 +808,7 @@ const FOODS_DEF = [
   { id: "carne", n: "Carne magra 100 g", p: 26, k: 190, c: 0, g: 8 }, { id: "banana", n: "Banana", p: 1, k: 105, c: 27, g: 0.4 }];
 const PROFILE_DEFAULTS = {
   braian: { height: null, stepsGoal: 10000, waterGoal: 2, bottle: 1, glucose: false, glu: GLU_DEF,
-    goalWeight: 75, goalWaist: 87, goalBf: 15, protGoal: 160, kcalGoal: 2250, foods: FOODS_DEF,
+    goalWeight: 75, goalWaist: 87, goalBf: 15, protGoal: 160, kcalGoal: 1900, foods: FOODS_DEF,
     supps: [ { id: "proteina", name: "Whey Gold Nutrition", dose: "1 scoop · 35 g", when: "Día", active: true, p: 28, k: 135, c: 4.8, g: 1.8 },
              { id: "creatina", name: "Creatina", dose: "5 g", when: "Día", active: false },
              { id: "magnesio", name: "Cloruro de magnesio", dose: "", when: "Noche", active: true } ] },
@@ -1293,6 +1293,9 @@ function migrate() {
   // v2: objetivo de bajar grasa; la meta de pasos guardada de 8.000 pasa a 10.000
   const d = S.docs["profiles/braian"];
   if (S.canWrite && d && !d.v2) writeDoc("profiles/braian", Object.assign({}, d, { stepsGoal: !d.stepsGoal || d.stepsGoal === 8000 ? 10000 : d.stepsGoal, v2: true, updated: Date.now() }), 300);
+  // v3: déficit moderado para bajar grasa sin perder músculo; las 2.250 kcal de antes pasan a 1.900
+  const d3 = S.docs["profiles/braian"];
+  if (S.canWrite && d3 && d3.v2 && !d3.v3) writeDoc("profiles/braian", Object.assign({}, d3, { kcalGoal: !d3.kcalGoal || d3.kcalGoal === 2250 ? 1900 : d3.kcalGoal, v3: true, updated: Date.now() }), 300);
   // Rutina nueva de Rocío (rv 2): reemplaza la guardada una sola vez; los registros de entrenos quedan
   const r = S.docs["routines/rocio"];
   if (S.canWrite && r && (r.rv || 1) < DEFAULTS.rocio.rv) writeDoc("routines/rocio", Object.assign({}, r, { days: clone(DEFAULTS.rocio.days), rv: DEFAULTS.rocio.rv, updated: Date.now() }), 300);
