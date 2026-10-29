@@ -2105,9 +2105,11 @@ function cardGoal(p, prof) {
   const start = prof.startWeight || (ws.W[0] && ws.W[0].weight) || cur, left = Math.round((cur - goal) * 10) / 10;
   const pct = start > goal ? clamp01((start - cur) / (start - goal)) : left <= 0 ? 1 : 0;
   let pace = "", eta = "";
+  // Las primeras 3 semanas casi todo lo que baja es agua: el ritmo engaña, así que la fecha usa como mucho 0,8 kg por semana y no se avisa de músculo
+  const early = !!ws.W.length && ws.W[0].date > addDays(today(), -21);
   if (ws.delta != null) {
     const dd = Math.round(ws.delta * 10) / 10; pace = `${dd < 0 ? "−" : dd > 0 ? "+" : "±"}${fmtN(Math.abs(dd))} kg esta semana`;
-    const e = goalEta(cur, goal, ws.delta); if (e) eta = `llegarías en ${e}`;
+    const e = goalEta(cur, goal, early ? Math.max(ws.delta, -0.8) : ws.delta); if (e) eta = `llegarías en ${e}`;
   }
   const waist = dailyOf(p).filter(r => r.waist != null).pop();
   const info = [pace, eta, waist && prof.goalWaist ? `cintura ${fmtN(waist.waist)} cm (meta ${fmtN(prof.goalWaist)})` : ""].filter(Boolean).join(" · ");
@@ -2115,7 +2117,8 @@ function cardGoal(p, prof) {
     <div class="goalrow"><div><div class="bignum">${fmtN(Math.round(cur * 10) / 10)}<small>kg</small></div><span class="small">${ws.a7 != null ? "promedio de 7 días" : "último peso"}</span></div><div class="goalto"><span class="small">meta</span><b>${fmtN(goal)} kg</b></div></div>
     <div class="pbar big"><i style="width:${Math.round(pct * 100)}%"></i></div>
     <p class="small">${info || "Con una semana de pesos vas a ver el ritmo y la fecha estimada."}</p>
-    ${ws.delta != null && ws.delta < -1.1 ? `<p class="advice warn">Estás bajando más de 1 kg por semana: es probable que estés perdiendo músculo. Subí un poco las calorías.</p>` : ""}</section>`;
+    ${ws.delta == null || ws.delta >= -1.1 ? "" : early ? `<p class="advice">Las primeras semanas se baja rápido porque se va agua, no músculo. Es normal: el ritmo real se ve desde la tercera semana.</p>`
+      : `<p class="advice warn">Estás bajando más de 1 kg por semana: es probable que estés perdiendo músculo. Subí un poco las calorías.</p>`}</section>`;
 }
 // Resumen de la semana: cruza los datos cargados y arma sugerencias concretas
 function insights(p) {
