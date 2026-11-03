@@ -736,7 +736,7 @@ const DEFAULTS = {
       E("banca-mancuerna", "Press banca plano (mancuerna)", "mancuerna", 3, "6-8", "", "A1"),
       E("remo-apoyo", "Remo con apoyo", "discos", 3, "10-12", "", "A2"),
       E("press-militar", "Press militar (mancuerna)", "mancuerna", 3, "10", "", "B1"),
-      E("jalon-neutro", "Jalón al pecho (neutro)", "maquina", 3, "10-12", "", "B2"),
+      E("jalon-iso", "Jalón con discos (iso-lateral)", "discos", 3, "10-12", "", "B2"),
       E("ext-nuca", "Extensiones tras nuca", "maquina", 3, "12-15", "", "C1"),
       E("curl-martillo", "Curl martillo", "mancuerna", 3, "10-12", "", "C2"),
       E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15") ] },
@@ -1297,6 +1297,10 @@ function migrate() {
   const d3 = S.docs["profiles/braian"];
   if (S.canWrite && d3 && d3.v2 && !d3.v3) writeDoc("profiles/braian", Object.assign({}, d3, { kcalGoal: !d3.kcalGoal || d3.kcalGoal === 2250 ? 1900 : d3.kcalGoal, v3: true, updated: Date.now() }), 300);
   // Rutina nueva de Rocío (rv 2): reemplaza la guardada una sola vez; los registros de entrenos quedan
+  // Braian: el jalón al pecho en polea pasa a la máquina de jalón con discos (iso-lateral); el historial de la polea queda aparte
+  const rb = S.docs["routines/braian"], JI = DEFAULTS.braian.days.flatMap(x => x.ex).find(e => e.key === "jalon-iso");
+  if (S.canWrite && rb && Array.isArray(rb.days) && !rb.jiso) writeDoc("routines/braian", Object.assign({}, rb, { jiso: true, updated: Date.now(),
+    days: rb.days.map(x => Object.assign({}, x, { ex: x.ex.map(e => e.key === "jalon-neutro" ? Object.assign({}, JI, e.ss ? { ss: e.ss } : {}) : e) })) }), 300);
   const r = S.docs["routines/rocio"];
   if (S.canWrite && r && (r.rv || 1) < DEFAULTS.rocio.rv) writeDoc("routines/rocio", Object.assign({}, r, { days: clone(DEFAULTS.rocio.days), rv: DEFAULTS.rocio.rv, updated: Date.now() }), 300);
 }
@@ -2003,6 +2007,7 @@ const EX_TECH = {
   "banca-mancuerna": { id: "SpYC0Kp", mus: { chest: 1, shoulders: 0.5, triceps: 0.5 }, tips: ["Omóplatos juntos y hacia abajo, pies firmes en el piso.", "Bajá las mancuernas al costado del pecho, codos a unos 45°.", "Empujá hacia arriba juntando un poco las mancuernas."] },
   "remo-apoyo": { id: "IGjKj1v", mus: { upper: 1, lats: 0.8, biceps: 0.4, rear: 0.4 }, tips: ["Pecho pegado a la almohadilla todo el tiempo, sin despegarlo.", "Tirá con los codos hacia atrás y juntá los omóplatos.", "Cada brazo tira su propio peso: que ninguno se adelante."] },
   "press-militar": { id: "znQUdHY", mus: { shoulders: 1, triceps: 0.5, upper: 0.2 }, tips: ["Espalda pegada al respaldo, abdomen firme.", "Empezá con las mancuernas a la altura de las orejas.", "Empujá arriba sin arquear la zona lumbar."] },
+  "jalon-iso": { id: "ky8FLU8", mus: { lats: 1, biceps: 0.5, upper: 0.4 }, tips: ["Rodillas trabadas bajo las almohadillas y pecho arriba.", "Tirá con los codos hacia abajo y atrás hasta el pecho.", "Cada brazo tira su propio peso: subí lento hasta estirar los dorsales."] },
   "jalon-neutro": { id: "4c9BhzB", mus: { lats: 1, biceps: 0.5, upper: 0.4 }, tips: ["Pecho arriba e inclinado apenas hacia atrás.", "Llevá el agarre al pecho tirando con los codos.", "Subí lento hasta estirar los dorsales."] },
   "jalon-pecho": { id: "eYnzaCm", mus: { lats: 1, biceps: 0.5, upper: 0.4, rear: 0.2 }, tips: ["Agarre un poco más ancho que los hombros.", "Bajá la barra al pecho, no detrás de la nuca.", "Subí controlado, sin soltar la tensión."] },
   "ext-nuca": { id: "2IxROQ1", mus: { triceps: 1 }, tips: ["Codos cerca de la cabeza y apuntando hacia adelante.", "Bajá detrás de la nuca hasta estirar bien el tríceps.", "Solo se mueven los antebrazos."] },
