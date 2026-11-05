@@ -512,6 +512,8 @@ details.fcat[open] > summary svg{transform:rotate(180deg)}
 .frow .mac b{color:var(--ink); font-weight:700}
 .frow button{border:0; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; background:var(--fill-2); color:var(--ink); position:relative}
 .frow button svg{width:18px; height:18px}
+.frow.offrow{grid-template-columns:minmax(0,1fr) auto}
+.frow.offrow button{width:auto; height:34px; padding:0 14px; border-radius:999px; font-size:13px; font-weight:600}
 .frow button.has{background:var(--accent); color:var(--on-accent)}
 .frow button em{position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; border-radius:99px; background:var(--ink); color:var(--sheet); font-style:normal; font-size:11px; font-weight:700; display:grid; place-items:center; padding:0 4px}
 details.fmore > summary{cursor:pointer; font-weight:600; font-size:14px; color:var(--ink-2); padding:4px 2px}
@@ -1118,7 +1120,14 @@ function weekDone(p) {
   for (const d of sessionsOf(p)) if (d.date >= ws && d.date <= we && sessionFilled(d)) set.add(d.day);
   return set;
 }
+// Cambios de una sola sesión, sin tocar la rutina: ejercicios quitados (off) y sumados (extra)
+function effDay(day, sess) {
+  const off = (sess && sess.off) || [], extra = ((sess && sess.extra) || []).filter(e => !day.ex.some(x => x.key === e.key));
+  if (!off.length && !extra.length) return day;
+  return Object.assign({}, day, { ex: day.ex.filter(e => !off.includes(e.key)).concat(extra) });
+}
 function sessSummary(day, sess) {
+  day = effDay(day, sess);
   let done = 0, planned = 0, vol = 0, min = 0;
   for (const ex of day.ex) {
     if (ex.type !== "cardio") planned += ex.sets;
@@ -2042,7 +2051,7 @@ const EX_TECH = {
   "cardio-mar": { id: "a8VDgLw", mus: {}, tips: ["Asiento a la altura de la cadera.", "Ritmo constante en el que puedas hablar pero te cueste un poco."] }
 };
 const techOf = key => EX_TECH[key] || null;
-const exByKey = (p, key) => { for (const d of routine(p).days) { const e = d.ex.find(x => x.key === key); if (e) return e; } return null; };
+const exByKey = (p, key) => { for (const q of [p, p === "braian" ? "rocio" : "braian"]) for (const d of routine(q).days) { const e = d.ex.find(x => x.key === key); if (e) return e; } for (const x of sessionsOf(p)) { const e = (x.extra || []).find(y => y.key === key); if (e) return e; } return null; };
 
 // Cuerpo de frente y de espalda. Cada músculo se pinta según cuánto se trabajó (0 a 1).
 const BODY_BASE = '<ellipse cx="100" cy="32" rx="17" ry="21"/><path d="M91 50h18l2 14H89z"/><path d="M64 70q36-10 72 0l6 34q-4 46-12 86-30 14-60 0-8-40-12-86z"/>';
@@ -2595,10 +2604,11 @@ function renderSheet() {
   document.documentElement.style.overflow = "hidden";
   const k = S.sheet, p = S.person, prof = profile(p), d = getDaily(p, S.date);
   const tk = String(k).startsWith("tech:") ? k.slice(5) : null, tex = tk ? exByKey(p, tk) : null;
-  const titles = { all: "Registro del día", steps: "Pasos", weight: "Peso y cintura", glucose: "Glucosa", food: "Comidas" };
+  const titles = { all: "Registro del día", steps: "Pasos", weight: "Peso y cintura", glucose: "Glucosa", food: "Comidas", addex: "Sumar ejercicio" };
   if (tk) titles[k] = tex ? tex.name : "Técnica";
   const parts = [];
   if (tk) parts.push(techSec(p, tk));
+  if (k === "addex") parts.push(secAddEx(p));
   if (k === "all" || k === "steps") parts.push(secSteps(p, prof, d));
   if (k === "all" || k === "food") parts.push(secFood(p, prof, d, k === "food"));
   if (k === "all") parts.push(`<div class="sec"><h3>Agua</h3>${waterCard(prof, d, "s")}</div>`);
@@ -2656,7 +2666,7 @@ function viewTrain() {
   if (!days.length) return `${dateBar()}<div class="empty g"><b>No hay días en la rutina.</b>Agregalos en Ajustes.</div>`;
   const day = curDay(), path = sessPath(p, S.date, day.id), sess = S.docs[path], wk = weekDone(p);
   const chips = days.map(d => `<button type="button" class="day${d.id === day.id ? " on" : ""}" id="day-${esc(d.id)}" data-act="day" data-id="${esc(d.id)}" aria-pressed="${d.id === day.id}"><span class="wd">${d.wd != null ? WD[d.wd] : "Libre"}${wk.has(d.id) ? '<i class="ok" title="Hecho esta semana"></i>' : ""}</span><span class="dl">${esc(d.label)}</span></button>`).join("");
-  const sum = sessSummary(day, sess);
+  const sum = sessSummary(day, sess), eday = effDay(day, sess);
   const conf = S.confirm === "del-sess" ? `<div class="confirm"><span>¿Borrar todo lo cargado en esta sesión?</span><button type="button" class="danger-btn" data-act="confirm-yes" data-write>Borrar</button><button type="button" class="ghost" data-act="confirm-no">Cancelar</button></div>` : "";
   return `<div class="stack">
     ${dateBar()}
@@ -2665,7 +2675,9 @@ function viewTrain() {
     <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}</h2><p>${day.focus ? esc(day.focus) + " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
     ${skipCard(sess, sum)}
     ${prof.glucose ? preGluCard(p, prof) : ""}
-    ${day.ex.length ? day.ex.map(ex => exCard(p, day, ex, sess, path)).join("") : `<div class="empty g"><b>Este día no tiene ejercicios.</b>Sumalos en Ajustes.</div>`}
+    ${eday.ex.length ? eday.ex.map(ex => exCard(p, eday, ex, sess, path)).join("") : `<div class="empty g"><b>No hay ejercicios en esta sesión.</b>Sumalos con el botón de abajo.</div>`}
+    ${offCard(day, sess)}
+    <div class="exf"><button type="button" class="pillbtn" data-act="sheet" data-s="addex" data-write>+ Sumar ejercicio</button></div>
     <label class="note card g" for="sess-note"><span class="eyebrow">Notas de la sesión</span><textarea id="sess-note" data-f="sess-note" placeholder="Cómo te sentiste, molestias, cambios de máquina…">${esc(sess && sess.note || "")}</textarea></label>
     <div class="card g"><div class="sum" id="sum">${sumHtml(sum)}</div>
       <div class="exf">${sess && sess.done ? `<span class="chip good">Entreno realizado ✓</span><button type="button" class="ghost" data-act="finish" data-v="0" data-write>Reabrir</button>` : `<button type="button" class="pillbtn acc" data-act="finish" data-v="1" data-write>Terminar entreno</button>`}${sess ? `<button type="button" class="ghost" data-act="del-sess" data-write>Borrar esta sesión</button>` : ""}</div>${conf}</div>
@@ -2713,6 +2725,8 @@ function exCard(p, day, ex, sess, path) {
   const lastTxt = last ? `Última: ${setsSummary(ex.type, last.entry)} · ${rel(last.date)}` : base != null ? `Carga de partida: ${fmtW(ex.type, base, ex.bar)}` : "Sin registros todavía";
   const isPlate = ex.type === "barra" || ex.type === "discos";
   const tgt = ex.type === "cardio" ? esc(ex.reps || "Libre") : `${ex.sets}×${esc(ex.reps)}`;
+  const isExtra = !!(sess && (sess.extra || []).some(e => e.key === ex.key));
+  const rmBtn = !doneCount ? `<button type="button" class="ghost" data-act="${isExtra ? "ex-del" : "ex-off"}" data-ex="${esc(ex.key)}" data-write>${isExtra ? "Quitar" : "Hoy no lo hago"}</button>` : "";
   return `<article class="ex g${doneCount >= (ex.type === "cardio" ? 1 : ex.sets) ? " done" : ""}" data-card="${esc(ex.key)}">
     <div class="exh"><div class="exl"><span class="exi" style="--exc:var(--${EX_COLOR[ex.type] || "v-teal"})">${SVGI(ex.type === "cardio" ? P_RUN : P_DUMB)}</span><div class="exm"><h3 class="exn">${esc(ex.name)}</h3><div class="meta">${techOf(ex.key) ? `<button type="button" class="techbtn" data-act="sheet" data-s="tech:${esc(ex.key)}">${SVGI('<path d="M8 5.5v13l11-6.5z"/>')}Ver técnica</button>` : ""}<span class="badge">${T.label}${ex.type === "barra" ? ` ${fmtN(ex.bar ?? 20)} kg` : ""}</span>${ex.note ? `<span>${esc(ex.note)}</span>` : ""}</div></div></div>
       <div class="target" title="Objetivo">${tgt}</div></div>
@@ -2720,7 +2734,7 @@ function exCard(p, day, ex, sess, path) {
     <div class="last">${esc(lastTxt)}${hint ? `<span class="chip ${hint.cls}">${esc(hint.txt)}</span>` : ""}</div>
     <div class="sets">${rows.join("")}</div>
     ${isPlate ? `<div class="plates" data-plates>${platesHtml(ex, en, ref, base)}</div>` : ""}
-    <div class="exf"><button type="button" class="ghost" data-act="add-set" data-ex="${esc(ex.key)}" data-write>+ Serie</button>${n > 1 ? `<button type="button" class="ghost" data-act="rm-set" data-ex="${esc(ex.key)}" data-write>− Serie</button>` : ""}${(ref && ref.length) || base != null ? `<button type="button" class="ghost" data-act="repeat" data-ex="${esc(ex.key)}" data-write>Copiar cargas anteriores</button>` : ""}</div>
+    <div class="exf">${rmBtn}<button type="button" class="ghost" data-act="add-set" data-ex="${esc(ex.key)}" data-write>+ Serie</button>${n > 1 ? `<button type="button" class="ghost" data-act="rm-set" data-ex="${esc(ex.key)}" data-write>− Serie</button>` : ""}${(ref && ref.length) || base != null ? `<button type="button" class="ghost" data-act="repeat" data-ex="${esc(ex.key)}" data-write>Copiar cargas anteriores</button>` : ""}</div>
   </article>`;
 }
 function fld(f, key, i, val, ph, unit, mode) {
@@ -2758,7 +2772,7 @@ function entryFor(s, ex) {
 }
 function editSet(row, f, raw) {
   const p = S.person, day = curDay(), key = row.dataset.ex, i = +row.dataset.i;
-  const ex = day.ex.find(x => x.key === key); if (!ex) return;
+  const ex = effDay(day, S.docs[sessPath(p, S.date, day.id)]).ex.find(x => x.key === key); if (!ex) return;
   const path = sessPath(p, S.date, day.id), s = sessForEdit(path, p, day), en = entryFor(s, ex);
   while (en.sets.length <= i) en.sets.push({});
   const num = parseNum(raw);
@@ -2778,7 +2792,7 @@ function editSet(row, f, raw) {
   const sum = $("#sum"); if (sum) sum.innerHTML = sumHtml(sessSummary(day, s));
 }
 function exAction(a, key) {
-  const p = S.person, day = curDay(), ex = day.ex.find(x => x.key === key); if (!ex) return;
+  const p = S.person, day = curDay(), ex = effDay(day, S.docs[sessPath(p, S.date, day.id)]).ex.find(x => x.key === key); if (!ex) return;
   const path = sessPath(p, S.date, day.id), s = sessForEdit(path, p, day), en = entryFor(s, ex), n = rowsCount(ex, en);
   if (a === "add-set") en.rows = Math.min(12, n + 1);
   if (a === "rm-set") { en.rows = Math.max(1, n - 1); en.sets = en.sets.slice(0, en.rows); }
@@ -2791,6 +2805,52 @@ function exAction(a, key) {
     }
   }
   s.updated = Date.now(); writeDoc(path, s, 250); render();
+}
+// Quitar o sumar ejercicios solo en esta sesión
+function offCard(day, sess) {
+  const off = day.ex.filter(e => ((sess && sess.off) || []).includes(e.key));
+  if (!off.length) return "";
+  return `<section class="card g" aria-label="Quitados de esta sesión"><span class="eyebrow">Hoy no los hacés</span><div class="frows">${off.map(e => `<div class="frow offrow"><span class="nm">${esc(e.name)}</span><button type="button" data-act="ex-on" data-ex="${esc(e.key)}" data-write>Volver</button></div>`).join("")}</div></section>`;
+}
+function exCatalog(p) {
+  const m = new Map(), add = (e, from) => { if (e && e.key && !m.has(e.key)) m.set(e.key, { key: e.key, name: e.name, type: e.type || "maquina", sets: e.sets || 3, reps: e.reps || "10-12", ...(e.bar != null ? { bar: e.bar } : {}), from }); };
+  routine(p).days.forEach(d => d.ex.forEach(e => add(e, d.label)));
+  const o = p === "braian" ? "rocio" : "braian"; routine(o).days.forEach(d => d.ex.forEach(e => add(e, `Rutina de ${PEOPLE[o].name}`)));
+  sessionsOf(p).sort((a, b) => a.date < b.date ? 1 : -1).forEach(x => (x.extra || []).forEach(e => add(e, "Sumado antes")));
+  return [...m.values()];
+}
+function axRows(p) {
+  const day = curDay(), eday = effDay(day, S.docs[sessPath(p, S.date, day.id)]), here = new Set(eday.ex.map(e => e.key));
+  const q = fold((S.axQ || "").trim()), list = exCatalog(p).filter(e => !here.has(e.key) && (!q || fold(e.name).includes(q)));
+  return list.map(e => `<div class="frow"><span class="nm">${esc(e.name)}<small>${esc(e.from)} · ${e.type === "cardio" ? esc(e.reps) : `${e.sets}×${esc(e.reps)}`}</small></span><span></span><button type="button" data-act="ex-add" data-k="${esc(e.key)}" data-write aria-label="Sumar ${esc(e.name)}">${SVGI(I_PLUS)}</button></div>`).join("")
+    || `<p class="small">No hay otros ejercicios con ese nombre. Crealo abajo.</p>`;
+}
+function secAddEx(p) {
+  const ty = S.axType || "maquina";
+  return `<div class="sec"><label class="fsearch">${SVGI(I_SEARCH)}<input type="search" data-f="ax-q" value="${esc(S.axQ || "")}" placeholder="Buscar ejercicio" autocomplete="off" aria-label="Buscar ejercicio" data-free></label>
+    <div class="fcat"><div class="frows" id="axl">${axRows(p)}</div></div></div>
+    <div class="sec"><h3>Crear uno nuevo</h3><div class="foodform">
+      <label class="lbl sm" for="ax-n">Nombre<input class="tin" id="ax-n" data-f="ax-n" value="${esc(S.axName || "")}" placeholder="Ej.: Aductores en máquina" autocomplete="off"></label>
+      <div class="ctxs" role="group" aria-label="Tipo">${Object.entries(TYPES).map(([k, t]) => `<button type="button" data-act="ax-type" data-k="${k}" aria-pressed="${k === ty}">${esc(t.label)}</button>`).join("")}</div>
+      <div class="grid2"><label class="lbl sm" for="ax-s">Series<span class="fld"><input id="ax-s" inputmode="numeric" autocomplete="off" data-f="ax-s" value="${esc(S.axSets || "")}" placeholder="3"></span></label>
+        <label class="lbl sm" for="ax-r">${ty === "cardio" ? "Tiempo" : "Reps"}<span class="fld"><input id="ax-r" autocomplete="off" data-f="ax-r" value="${esc(S.axReps || "")}" placeholder="${ty === "cardio" ? "15-20 min" : "12-15"}"></span></label></div>
+      <button type="button" class="pillbtn acc" data-act="ex-new" data-write>Sumar a esta sesión</button></div></div>`;
+}
+function sessExEdit(fn) {
+  const p = S.person, day = curDay(), path = sessPath(p, S.date, day.id), s = sessForEdit(path, p, day);
+  s.off = s.off || []; s.extra = s.extra || [];
+  fn(s, day);
+  if (!s.off.length) delete s.off; if (!s.extra.length) delete s.extra;
+  s.dayLabel = day.label; s.updated = Date.now(); writeDoc(path, s, 250);
+}
+// Si el ejercicio quitado no tiene series hechas, se borra lo que tenía a medio cargar
+const dropEmpty = (s, key) => { const en = s.entries[key]; if (en && !(en.sets || []).some(isDone)) delete s.entries[key]; };
+function addSessEx(e) {
+  sessExEdit((s, day) => {
+    if (day.ex.some(x => x.key === e.key)) { s.off = s.off.filter(k => k !== e.key); return; }
+    if (!s.extra.some(x => x.key === e.key)) s.extra.push({ key: e.key, name: e.name, type: e.type, sets: e.sets, reps: e.reps, note: "", ...(e.bar != null ? { bar: e.bar } : {}) });
+  });
+  S.sheet = null; renderSheet(); render(); haptic(); toast(`Sumado: ${e.name}`);
 }
 
 /* --- Progreso --- */
@@ -3305,6 +3365,17 @@ function bind() {
     else if (a === "glu-pre") { const v = parseInt0(S.preDraft); if (v == null || v < 20 || v > 600) { toast("Escribí un valor entre 20 y 600 mg/dL"); return; } addGlucose(v, nowHM(), "pre"); S.preDraft = ""; render(); }
     else if (a === "glu-del") { const id = b.dataset.id; editDaily(S.person, S.date, d => { d.glucose = (d.glucose || []).filter(g => g.id !== id); if (!d.glucose.length) delete d.glucose; }, 200); render(); }
     else if (a === "add-set" || a === "rm-set" || a === "repeat") exAction(a, b.dataset.ex);
+    else if (a === "ex-off") { const k = b.dataset.ex; sessExEdit(s => { if (!s.off.includes(k)) s.off.push(k); dropEmpty(s, k); }); render(); haptic(); }
+    else if (a === "ex-on") { const k = b.dataset.ex; sessExEdit(s => { s.off = s.off.filter(x => x !== k); }); render(); }
+    else if (a === "ex-del") { const k = b.dataset.ex; sessExEdit(s => { s.extra = s.extra.filter(x => x.key !== k); dropEmpty(s, k); }); render(); haptic(); }
+    else if (a === "ex-add") { const e = exCatalog(S.person).find(x => x.key === b.dataset.k); if (e) addSessEx(e); }
+    else if (a === "ax-type") { S.axType = b.dataset.k; renderSheet(); }
+    else if (a === "ex-new") {
+      const name = String(S.axName || "").trim(); if (!name) { toast("Escribí el nombre del ejercicio"); return; }
+      const same = exCatalog(S.person).find(x => fold(x.name) === fold(name)), ty = S.axType || "maquina";
+      const e = same || { key: "x-" + fold(name).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40), name, type: ty, sets: Math.min(10, Math.max(1, parseInt(S.axSets, 10) || 3)), reps: String(S.axReps || "").trim() || (ty === "cardio" ? "15-20 min" : "12-15") };
+      S.axName = ""; S.axSets = ""; S.axReps = ""; addSessEx(e);
+    }
     else if (a === "del-sess") { S.confirm = "del-sess"; render(); }
     else if (a === "skip-open") { S.skipOpen = true; S.skipWhy = ""; S.skipNote = ""; render(); }
     else if (a === "skip-cancel") { S.skipOpen = false; render(); }
@@ -3358,6 +3429,10 @@ function bind() {
     if (f === "pre-glu") { S.preDraft = t.value; return; }
     if (f === "glu-note") { S.gluNote = t.value; return; }
     if (f === "skip-note") { S.skipNote = t.value; return; }
+    if (f === "ax-n") { S.axName = t.value; return; }
+    if (f === "ax-s") { S.axSets = t.value; return; }
+    if (f === "ax-r") { S.axReps = t.value; return; }
+    if (f === "ax-q") { S.axQ = t.value; const box = $("#axl"); if (box) { box.innerHTML = axRows(S.person); lockWrites(box); } return; }
     if (f === "food-n" || f === "food-p" || f === "food-k" || f === "food-c" || f === "food-g") { S.foodDraft[f.slice(5)] = t.value; return; }
     if (f === "ai-text") { S.aiText = t.value; return; }
     if (f === "plate-name") { S.plateName = t.value; return; }
