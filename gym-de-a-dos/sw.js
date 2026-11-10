@@ -1,6 +1,6 @@
 // Guarda la app en el teléfono para que abra sin internet.
 // Al cambiar cualquier archivo de la app, subí el número de CACHE para que los teléfonos bajen la versión nueva.
-const CACHE = "gym-de-a-dos-v39";
+const CACHE = "gym-de-a-dos-v40";
 const SHELL = ["./", "./index.html", "./config.js", "./vendor/supabase.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png"];
 
@@ -21,9 +21,25 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (req.mode === "navigate" && url.origin === location.origin) {
-    // Primero la red, así llegan las actualizaciones; sin señal, la copia guardada.
-    e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put("./index.html", copy)); return res; })
-      .catch(() => caches.match("./index.html")));
+    // Primero la red, así llegan las actualizaciones. Si tarda más de 2,5 s (mala señal) o no hay, abre la copia
+    // guardada y la versión nueva se termina de bajar de fondo.
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE), cached = await cache.match("./index.html");
+      let late = false;
+      const net = fetch(req.url, { cache: "no-cache", credentials: "same-origin" }).then(async res => {
+        if (!res || !res.ok) return cached || res;
+        const was = cached && cached.headers.get("etag"), now = res.headers.get("etag");
+        await cache.put("./index.html", res.clone());
+        if (late && was && now && was !== now) (await self.clients.matchAll()).forEach(c => c.postMessage({ type: "nueva-version" }));
+        // Una navegación no acepta respuestas que vienen de una redirección: se arma una limpia
+        return res.redirected ? new Response(res.body, { status: res.status, statusText: res.statusText, headers: res.headers }) : res;
+      });
+      if (!cached) return net;
+      const first = await Promise.race([net.catch(() => null), new Promise(ok => setTimeout(() => ok(null), 2500))]);
+      if (first) return first;
+      late = true; e.waitUntil(net.catch(() => {}));
+      return cached;
+    })());
     return;
   }
   // Animaciones de técnica (ExerciseDB): se bajan una sola vez y quedan guardadas
