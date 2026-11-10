@@ -295,6 +295,10 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 select.tin{appearance:auto}
 .switch{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600}
 .switch input{width:20px; height:20px; accent-color:var(--accent)}
+.carebox{padding:12px 14px; border-radius:var(--r); align-items:flex-start}
+.carebox input{flex:none; margin-top:2px}
+.carebox span{display:grid; gap:2px; min-width:0}
+.carebox small{font-weight:400; font-size:12.5px; color:var(--ink-2); line-height:1.35}
 
 /* Hoja de registro */
 .scrim{position:fixed; inset:0; z-index:20; background:var(--scrim)}
@@ -1123,10 +1127,21 @@ function weekDone(p) {
   return set;
 }
 // Cambios de una sola sesión, sin tocar la rutina: ejercicios quitados (off) y sumados (extra)
+// Modo cuidado: mientras dura una molestia o lesión, los días de pierna pasan a una rutina suave (sin sentadillas
+// ni prensa pesada). Se prende en Entreno y queda anotado en cada sesión que se hace así.
+const CARE_EX = [E("ext-cuad", "Extensiones de cuádriceps", "maquina", 3, "12-15"), E("gemelos-prensa", "Gemelos en prensa", "maquina", 3, "12-15"), E("curl-acostado", "Curl femoral acostado", "maquina", 3, "12-15")];
+const isLegDay = day => /pierna/i.test((day && day.label) || "");
+function careOn(day, sess) {
+  if (!isLegDay(day)) return false;
+  if (sess && sess.care != null) return !!sess.care;
+  if (sess && sessionFilled(sess)) return false; // sesiones cargadas antes de que existiera el modo
+  return !!profile(S.person).care;
+}
+const baseEx = (day, sess) => careOn(day, sess) ? CARE_EX : day.ex;
 function effDay(day, sess) {
-  const off = (sess && sess.off) || [], extra = ((sess && sess.extra) || []).filter(e => !day.ex.some(x => x.key === e.key));
-  if (!off.length && !extra.length) return day;
-  return Object.assign({}, day, { ex: day.ex.filter(e => !off.includes(e.key)).concat(extra) });
+  const src = baseEx(day, sess), off = (sess && sess.off) || [], extra = ((sess && sess.extra) || []).filter(e => !src.some(x => x.key === e.key));
+  if (src === day.ex && !off.length && !extra.length) return day;
+  return Object.assign({}, day, { ex: src.filter(e => !off.includes(e.key)).concat(extra) });
 }
 function sessSummary(day, sess) {
   day = effDay(day, sess);
@@ -2030,6 +2045,7 @@ const EX_TECH = {
   "ext-cuad": { id: "my33uHU", mus: { quads: 1 }, tips: ["El eje de la máquina alineado con la rodilla.", "Estirá del todo y apretá un segundo arriba.", "Bajá controlado, sin dejar caer el peso."] },
   "sillon-cuad": { id: "my33uHU", mus: { quads: 1 }, tips: ["El eje de la máquina alineado con la rodilla.", "Estirá del todo y apretá un segundo arriba.", "Bajá controlado, sin dejar caer el peso."] },
   "curl-sentado": { id: "Zg3XY7P", mus: { hams: 1, calves: 0.2 }, tips: ["El rodillo arriba de los talones, rodilla alineada con el eje.", "Llevá los talones bien atrás, sin despegar la cola.", "Volvé lento hasta estirar casi del todo."] },
+  "curl-acostado": { id: "17lJ1kr", mus: { hams: 1, calves: 0.2 }, tips: ["Cadera pegada al banco, sin levantar la cola al tirar.", "El rodillo arriba de los talones, rodillas apenas fuera del borde.", "Llevá los talones hacia la cola y bajá lento, soltando el aire al subir."] },
   "sillon-femoral": { id: "Zg3XY7P", mus: { hams: 1, calves: 0.2 }, tips: ["El rodillo arriba de los talones, rodilla alineada con el eje.", "Llevá los talones bien atrás, sin despegar la cola.", "Volvé lento hasta estirar casi del todo."] },
   "banca-mancuerna": { id: "SpYC0Kp", mus: { chest: 1, shoulders: 0.5, triceps: 0.5 }, tips: ["Omóplatos juntos y hacia abajo, pies firmes en el piso.", "Bajá las mancuernas al costado del pecho, codos a unos 45°.", "Empujá hacia arriba juntando un poco las mancuernas."] },
   "remo-apoyo": { id: "IGjKj1v", mus: { upper: 1, lats: 0.8, biceps: 0.4, rear: 0.4 }, tips: ["Pecho pegado a la almohadilla todo el tiempo, sin despegarlo.", "Tirá con los codos hacia atrás y juntá los omóplatos.", "Cada brazo tira su propio peso: que ninguno se adelante."] },
@@ -2085,7 +2101,7 @@ function musOf(key, name) {
   const n = fold(name || key || ""), hit = MUS_GUESS.find(([re]) => re.test(n));
   return hit ? hit[1] : null;
 }
-const exByKey = (p, key) => { for (const q of [p, p === "braian" ? "rocio" : "braian"]) for (const d of routine(q).days) { const e = d.ex.find(x => x.key === key); if (e) return e; } for (const x of sessionsOf(p)) { const e = (x.extra || []).find(y => y.key === key); if (e) return e; } return null; };
+const exByKey = (p, key) => { const c = CARE_EX.find(x => x.key === key); for (const q of [p, p === "braian" ? "rocio" : "braian"]) for (const d of routine(q).days) { const e = d.ex.find(x => x.key === key); if (e) return e; } for (const x of sessionsOf(p)) { const e = (x.extra || []).find(y => y.key === key); if (e) return e; } return c || null; };
 
 // Cuerpo de frente y de espalda. Cada músculo se pinta según cuánto se trabajó (0 a 1).
 const BODY_BASE = '<ellipse cx="100" cy="32" rx="17" ry="21"/><path d="M91 50h18l2 14H89z"/><path d="M64 70q36-10 72 0l6 34q-4 46-12 86-30 14-60 0-8-40-12-86z"/>';
@@ -2512,9 +2528,9 @@ function cardTrainToday(p, prof) {
   }
   const sm = sessSummary(day, S.docs[sessPath(p, S.date, day.id)]);
   const sk = (S.docs[sessPath(p, S.date, day.id)] || {}).skip;
-  const st = sk && !sm.done ? `Faltaste · ${skipTxt(sk)}` : finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? `Realizada ✓ · ${sm.done} series · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${day.ex.length} ejercicios · ${sm.planned} series`;
+  const cur = S.docs[sessPath(p, S.date, day.id)], st = sk && !sm.done ? `Faltaste · ${skipTxt(sk)}` : finished(sm, S.docs[sessPath(p, S.date, day.id)]) ? `Realizada ✓ · ${sm.done} series · ${fmtInt(sm.vol)} kg movidos` : sm.done ? `${sm.done} de ${sm.planned} series hechas` : `${effDay(day, cur).ex.length} ejercicios · ${sm.planned} series`;
   return vc("v-blue", isToday ? "Entreno de hoy" : `Entreno del ${WDL[parseIso(S.date).getDay()]}`, ART.dumbbell(),
-    `<div class="v">${esc(day.label)}</div><p class="s">${esc(st)}${day.focus ? " · " + esc(day.focus) : ""}</p>`, `data-act="go-train" data-id="${esc(day.id)}"`, true, `Abrir ${day.label}`);
+    `<div class="v">${esc(day.label)}</div><p class="s">${esc(st)}${careOn(day, cur) ? " · Modo cuidado" : day.focus ? " · " + esc(day.focus) : ""}</p>`, `data-act="go-train" data-id="${esc(day.id)}"`, true, `Abrir ${day.label}`);
 }
 function waterCard(prof, d, pre = "h") {
   const w = d.water || 0, bottle = prof.bottle || 1, goal = prof.waterGoal || 2;
@@ -2673,13 +2689,14 @@ function viewTrain() {
   if (!days.length) return `${dateBar()}<div class="empty g"><b>No hay días en la rutina.</b>Agregalos en Ajustes.</div>`;
   const day = curDay(), path = sessPath(p, S.date, day.id), sess = S.docs[path], wk = weekDone(p);
   const chips = days.map(d => `<button type="button" class="day${d.id === day.id ? " on" : ""}" id="day-${esc(d.id)}" data-act="day" data-id="${esc(d.id)}" aria-pressed="${d.id === day.id}"><span class="wd">${d.wd != null ? WD[d.wd] : "Libre"}${wk.has(d.id) ? '<i class="ok" title="Hecho esta semana"></i>' : ""}</span><span class="dl">${esc(d.label)}</span></button>`).join("");
-  const sum = sessSummary(day, sess), eday = effDay(day, sess);
+  const sum = sessSummary(day, sess), eday = effDay(day, sess), care = careOn(day, sess);
   const conf = S.confirm === "del-sess" ? `<div class="confirm"><span>¿Borrar todo lo cargado en esta sesión?</span><button type="button" class="danger-btn" data-act="confirm-yes" data-write>Borrar</button><button type="button" class="ghost" data-act="confirm-no">Cancelar</button></div>` : "";
   return `<div class="stack">
     ${dateBar()}
     <div class="days g" role="group" aria-label="Día de rutina">${chips}</div>
     ${spotifyCard()}
-    <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}</h2><p>${day.focus ? esc(day.focus) + " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
+    <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}${care ? ' <span class="chip warn" style="vertical-align:middle">Modo cuidado</span>' : ""}</h2><p>${care ? "Pierna suave" : day.focus ? esc(day.focus) : ""}${care || day.focus ? " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
+    ${isLegDay(day) ? `<label class="switch carebox g" for="care-on"><input type="checkbox" id="care-on" data-f="care"${care ? " checked" : ""}><span><b>Modo cuidado</b><small>${care ? "Rutina suave por molestia o lesión: sin sentadillas ni prensa pesada. Apagalo cuando te recuperes." : "Para días con molestia o lesión: cambia la pierna por 3 ejercicios suaves."}</small></span></label>` : ""}
     ${skipCard(sess, sum)}
     ${prof.glucose ? preGluCard(p, prof) : ""}
     ${eday.ex.length ? eday.ex.map(ex => exCard(p, eday, ex, sess, path)).join("") : `<div class="empty g"><b>No hay ejercicios en esta sesión.</b>Sumalos con el botón de abajo.</div>`}
@@ -2771,7 +2788,9 @@ function platesHtml(ex, en, ref, base) {
 }
 function sessForEdit(path, p, day) {
   const s = clone(S.docs[path]) || { person: p, date: S.date, day: day.id, dayLabel: day.label, entries: {}, note: "" };
-  s.entries = s.entries || {}; return s;
+  s.entries = s.entries || {};
+  if (s.care == null && isLegDay(day)) s.care = careOn(day, S.docs[path]);
+  return s;
 }
 function entryFor(s, ex) {
   const en = s.entries[ex.key] || (s.entries[ex.key] = { name: ex.name, type: ex.type, sets: [] });
@@ -2815,7 +2834,7 @@ function exAction(a, key) {
 }
 // Quitar o sumar ejercicios solo en esta sesión
 function offCard(day, sess) {
-  const off = day.ex.filter(e => ((sess && sess.off) || []).includes(e.key));
+  const off = baseEx(day, sess).filter(e => ((sess && sess.off) || []).includes(e.key));
   if (!off.length) return "";
   return `<section class="card g" aria-label="Quitados de esta sesión"><span class="eyebrow">Hoy no los hacés</span><div class="frows">${off.map(e => `<div class="frow offrow"><span class="nm">${esc(e.name)}</span><button type="button" data-act="ex-on" data-ex="${esc(e.key)}" data-write>Volver</button></div>`).join("")}</div></section>`;
 }
@@ -2823,6 +2842,7 @@ function exCatalog(p) {
   const m = new Map(), add = (e, from) => { if (e && e.key && !m.has(e.key)) m.set(e.key, { key: e.key, name: e.name, type: e.type || "maquina", sets: e.sets || 3, reps: e.reps || "10-12", ...(e.bar != null ? { bar: e.bar } : {}), from }); };
   routine(p).days.forEach(d => d.ex.forEach(e => add(e, d.label)));
   const o = p === "braian" ? "rocio" : "braian"; routine(o).days.forEach(d => d.ex.forEach(e => add(e, `Rutina de ${PEOPLE[o].name}`)));
+  CARE_EX.forEach(e => add(e, "Modo cuidado"));
   sessionsOf(p).sort((a, b) => a.date < b.date ? 1 : -1).forEach(x => (x.extra || []).forEach(e => add(e, "Sumado antes")));
   return [...m.values()];
 }
@@ -2854,7 +2874,7 @@ function sessExEdit(fn) {
 const dropEmpty = (s, key) => { const en = s.entries[key]; if (en && !(en.sets || []).some(isDone)) delete s.entries[key]; };
 function addSessEx(e) {
   sessExEdit((s, day) => {
-    if (day.ex.some(x => x.key === e.key)) { s.off = s.off.filter(k => k !== e.key); return; }
+    if (baseEx(day, s).some(x => x.key === e.key)) { s.off = s.off.filter(k => k !== e.key); return; }
     if (!s.extra.some(x => x.key === e.key)) s.extra.push({ key: e.key, name: e.name, type: e.type, sets: e.sets, reps: e.reps, note: "", ...(e.bar != null ? { bar: e.bar } : {}) });
   });
   S.sheet = null; renderSheet(); render(); haptic(); toast(`Sumado: ${e.name}`);
@@ -3473,6 +3493,14 @@ function bind() {
   app.addEventListener("change", e => {
     const t = e.target, f = t.dataset.f; if (!f) return;
     if (f === "food-save") { S.foodDraft.save = t.checked; return; }
+    if (f === "care") {
+      if (!S.canWrite) return;
+      const on = t.checked, pp = S.person, day = curDay(), path = sessPath(pp, S.date, day.id);
+      profileEdit(pr => { pr.care = on; });
+      // La sesión de hoy pasa al modo elegido; las de otros días quedan como se hicieron
+      if (S.docs[path] && S.date === today()) { const x = sessForEdit(path, pp, day); x.care = on; x.updated = Date.now(); writeDoc(path, x, 250); }
+      haptic(); toast(on ? "Modo cuidado activado en los días de pierna" : "Modo cuidado apagado: vuelve tu rutina normal"); render(); return;
+    }
     if (f === "photo-add") { const file = t.files && t.files[0]; t.value = ""; if (file) addPhoto(file); return; }
     if (f === "prof-fastOn") { profileEdit(pr => { pr.fastOn = t.checked; if (!pr.fastH) pr.fastH = 16; }); render(); return; }
     if (f === "prof-fastH") { profileEdit(pr => { pr.fastH = +t.value; }); t.blur(); render(); return; }
