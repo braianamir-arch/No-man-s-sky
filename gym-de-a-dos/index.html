@@ -779,7 +779,7 @@ const DEFAULTS = {
 };
 const PEOPLE = {
   braian: { name: "Braian", goals: ["Bajar a 15% de grasa corporal", "Conservar el músculo mientras baja el peso"], lossIsGood: true },
-  rocio: { name: "Rocío", goals: ["Bajar de peso (lo principal)", "Glúteos más grandes", "Brazos, abdomen y piernas más firmes"], lossIsGood: true }
+  rocio: { name: "Rocío", goals: ["Bajar de peso (lo principal)", "Glúteos más grandes", "Brazos, abdomen y piernas más firmes"], lossIsGood: true, mix: true }
 };
 const GLU_DEF = { lo: 80, hi: 130, post: 180, low: 70 };
 // Comidas rápidas: proteína (g) y calorías por porción
@@ -1123,7 +1123,7 @@ function setsSummary(type, en) {
 function entryVolume(type, en) { let v = 0; for (const s of en.sets || []) if (s.r != null) { const t = totalLoad(type, s.w, en.bar); if (t) v += t * s.r; } return v; }
 function weekDone(p) {
   const ws = weekStart(S.date), we = addDays(ws, 6), set = new Set();
-  for (const d of sessionsOf(p)) if (d.date >= ws && d.date <= we && sessionFilled(d)) set.add(d.day);
+  for (const d of sessionsOf(p)) if (d.date >= ws && d.date <= we && sessionFilled(d)) { set.add(d.day); if (d.mix) set.add(d.mix.id); }
   return set;
 }
 // Cambios de una sola sesión, sin tocar la rutina: ejercicios quitados (off) y sumados (extra)
@@ -2695,9 +2695,10 @@ function viewTrain() {
     ${dateBar()}
     <div class="days g" role="group" aria-label="Día de rutina">${chips}</div>
     ${spotifyCard()}
-    <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}${care ? ' <span class="chip warn" style="vertical-align:middle">Modo cuidado</span>' : ""}</h2><p>${care ? "Pierna suave" : day.focus ? esc(day.focus) : ""}${care || day.focus ? " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
+    <div class="sesshead"><h2>${esc(day.label)}${finished(sum, sess) ? ' <span class="chip good" style="vertical-align:middle">Realizada ✓</span>' : ""}${care ? ' <span class="chip warn" style="vertical-align:middle">Modo cuidado</span>' : ""}${sess && sess.mix ? ` <span class="chip" style="vertical-align:middle">+ ${esc(sess.mix.label)}</span>` : ""}</h2><p>${care ? "Pierna suave" : day.focus ? esc(day.focus) : ""}${care || day.focus ? " · " : ""}Semana: ${wk.size} de ${days.length} días</p></div>
     ${isLegDay(day) ? `<label class="switch carebox g" for="care-on"><input type="checkbox" id="care-on" data-f="care"${care ? " checked" : ""}><span><b>Modo cuidado</b><small>${care ? "Rutina suave por molestia o lesión: sin sentadillas ni prensa pesada. Apagalo cuando te recuperes." : "Para días con molestia o lesión: cambia la pierna por 3 ejercicios suaves."}</small></span></label>` : ""}
     ${skipCard(sess, sum)}
+    ${mixCard(p, day, sess, sum)}
     ${prof.glucose ? preGluCard(p, prof) : ""}
     ${eday.ex.length ? eday.ex.map(ex => exCard(p, eday, ex, sess, path)).join("") : `<div class="empty g"><b>No hay ejercicios en esta sesión.</b>Sumalos con el botón de abajo.</div>`}
     ${offCard(day, sess)}
@@ -2831,6 +2832,22 @@ function exAction(a, key) {
     }
   }
   s.updated = Date.now(); writeDoc(path, s, 250); render();
+}
+// Sesión combinada: si esta semana quedó sin hacer un entreno anterior, se suma lo principal a la sesión de hoy.
+// No son las dos rutinas enteras: los primeros 4 ejercicios de fuerza del día que faltó, con 2 series cada uno.
+const MIX_N = 4, MIX_SETS = 2;
+function missedDay(p, day) {
+  if (!PEOPLE[p].mix || S.date !== today()) return null;
+  const idx = d => (d.wd + 6) % 7, now = (parseIso(S.date).getDay() + 6) % 7, wk = weekDone(p);
+  return routine(p).days.filter(d => d.wd != null && d.id !== day.id && idx(d) < now && !wk.has(d.id)).sort((a, b) => idx(b) - idx(a))[0] || null;
+}
+const mixPicks = (missed, day, sess) => { const src = baseEx(day, sess); return missed.ex.filter(e => e.type !== "cardio" && !src.some(x => x.key === e.key)).slice(0, MIX_N); };
+function mixCard(p, day, sess, sum) {
+  if (sess && sess.mix) return `<section class="card g" aria-label="Sesión combinada"><div class="row"><h2>Sesión combinada</h2><button type="button" class="ghost" data-act="mix-undo" data-write>Deshacer</button></div><p class="small">Sumaste lo principal de ${esc(sess.mix.label)}: están al final, con ${MIX_SETS} series cada uno. Esa sesión ya cuenta como hecha esta semana.</p></section>`;
+  if ((sess && (sess.done || sess.skip)) || finished(sum, sess)) return "";
+  const m = missedDay(p, day); if (!m) return "";
+  const n = mixPicks(m, day, sess).length; if (!n) return "";
+  return `<section class="card g" aria-label="Recuperar un entreno"><h2>Quedó sin hacer ${esc(m.label)}</h2><p class="small">Podés sumar lo principal a la sesión de hoy: ${n} ejercicios con ${MIX_SETS} series cada uno, unos 15 a 20 minutos más.</p><div class="exf"><button type="button" class="pillbtn acc" data-act="mix-add" data-write>Sumar a hoy</button></div></section>`;
 }
 // Quitar o sumar ejercicios solo en esta sesión
 function offCard(day, sess) {
@@ -3396,6 +3413,18 @@ function bind() {
     else if (a === "ex-off") { const k = b.dataset.ex; sessExEdit(s => { if (!s.off.includes(k)) s.off.push(k); dropEmpty(s, k); }); render(); haptic(); }
     else if (a === "ex-on") { const k = b.dataset.ex; sessExEdit(s => { s.off = s.off.filter(x => x !== k); }); render(); }
     else if (a === "ex-del") { const k = b.dataset.ex; sessExEdit(s => { s.extra = s.extra.filter(x => x.key !== k); dropEmpty(s, k); }); render(); haptic(); }
+    else if (a === "mix-add") {
+      const m = missedDay(S.person, curDay()); if (!m) return;
+      sessExEdit((x, day) => { const picks = mixPicks(m, day, x).filter(e => !x.extra.some(y => y.key === e.key));
+        picks.forEach(e => x.extra.push({ key: e.key, name: e.name, type: e.type, sets: MIX_SETS, reps: e.reps, note: e.note || "", ...(e.bar != null ? { bar: e.bar } : {}) }));
+        x.mix = { id: m.id, label: m.label, keys: picks.map(e => e.key) }; });
+      toast(`Sumado lo principal de ${m.label}`); render();
+    }
+    else if (a === "mix-undo") {
+      sessExEdit(x => { const keys = (x.mix && x.mix.keys) || [], has = k => { const en = x.entries[k]; return !!en && (en.sets || []).some(isDone); };
+        x.extra = x.extra.filter(y => !keys.includes(y.key) || has(y.key)); keys.forEach(k => dropEmpty(x, k)); delete x.mix; });
+      render();
+    }
     else if (a === "ex-add") { const e = exCatalog(S.person).find(x => x.key === b.dataset.k); if (e) addSessEx(e); }
     else if (a === "ax-type") { S.axType = b.dataset.k; renderSheet(); }
     else if (a === "ex-new") {
