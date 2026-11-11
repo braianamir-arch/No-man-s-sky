@@ -1141,7 +1141,9 @@ const baseEx = (day, sess) => careOn(day, sess) ? CARE_EX : day.ex;
 function effDay(day, sess) {
   const src = baseEx(day, sess), off = (sess && sess.off) || [], extra = ((sess && sess.extra) || []).filter(e => !src.some(x => x.key === e.key));
   if (src === day.ex && !off.length && !extra.length) return day;
-  return Object.assign({}, day, { ex: src.filter(e => !off.includes(e.key)).concat(extra) });
+  const ex = src.filter(e => !off.includes(e.key)).concat(extra);
+  // En una sesión combinada el cardio va al final, después de lo sumado del otro día
+  return Object.assign({}, day, { ex: sess && sess.mix ? ex.filter(e => e.type !== "cardio").concat(ex.filter(e => e.type === "cardio")) : ex });
 }
 function sessSummary(day, sess) {
   day = effDay(day, sess);
@@ -2833,21 +2835,25 @@ function exAction(a, key) {
   }
   s.updated = Date.now(); writeDoc(path, s, 250); render();
 }
-// Sesión combinada: si esta semana quedó sin hacer un entreno anterior, se suma lo principal a la sesión de hoy.
-// No son las dos rutinas enteras: los primeros 4 ejercicios de fuerza del día que faltó, con 2 series cada uno.
+// Sesión combinada: si esta semana quedó sin hacer un entreno anterior, hoy se hace lo principal de los dos días.
+// Para que dure como un día normal: los primeros 4 ejercicios de fuerza de hoy (el resto queda en "Hoy no los hacés"),
+// los primeros 4 del día que faltó con 2 series cada uno, y el cardio de hoy.
 const MIX_N = 4, MIX_SETS = 2;
 function missedDay(p, day) {
   if (!PEOPLE[p].mix || S.date !== today()) return null;
   const idx = d => (d.wd + 6) % 7, now = (parseIso(S.date).getDay() + 6) % 7, wk = weekDone(p);
   return routine(p).days.filter(d => d.wd != null && d.id !== day.id && idx(d) < now && !wk.has(d.id)).sort((a, b) => idx(b) - idx(a))[0] || null;
 }
+// Lo de hoy que se deja para otro día: ejercicios de fuerza después del cuarto, si no tienen series cargadas
+const mixDrop = (day, sess) => baseEx(day, sess).filter(e => e.type !== "cardio").slice(MIX_N).filter(e => { const en = sess && sess.entries && sess.entries[e.key]; return !(en && (en.sets || []).some(isDone)); });
 const mixPicks = (missed, day, sess) => { const src = baseEx(day, sess); return missed.ex.filter(e => e.type !== "cardio" && !src.some(x => x.key === e.key)).slice(0, MIX_N); };
 function mixCard(p, day, sess, sum) {
-  if (sess && sess.mix) return `<section class="card g" aria-label="Sesión combinada"><div class="row"><h2>Sesión combinada</h2><button type="button" class="ghost" data-act="mix-undo" data-write>Deshacer</button></div><p class="small">Sumaste lo principal de ${esc(sess.mix.label)}: están al final, con ${MIX_SETS} series cada uno. Esa sesión ya cuenta como hecha esta semana.</p></section>`;
+  if (sess && sess.mix) return `<section class="card g" aria-label="Sesión combinada"><div class="row"><h2>Sesión combinada</h2><button type="button" class="ghost" data-act="mix-undo" data-write>Deshacer</button></div><p class="small">Hoy va lo principal de los dos días: los primeros ejercicios de ${esc(day.label)} y, al final, los de ${esc(sess.mix.label)} con ${MIX_SETS} series cada uno. Los dos días cuentan como hechos esta semana.</p></section>`;
   if ((sess && (sess.done || sess.skip)) || finished(sum, sess)) return "";
   const m = missedDay(p, day); if (!m) return "";
   const n = mixPicks(m, day, sess).length; if (!n) return "";
-  return `<section class="card g" aria-label="Recuperar un entreno"><h2>Quedó sin hacer ${esc(m.label)}</h2><p class="small">Podés sumar lo principal a la sesión de hoy: ${n} ejercicios con ${MIX_SETS} series cada uno, unos 15 a 20 minutos más.</p><div class="exf"><button type="button" class="pillbtn acc" data-act="mix-add" data-write>Sumar a hoy</button></div></section>`;
+  const keep = baseEx(day, sess).filter(e => e.type !== "cardio").length - mixDrop(day, sess).length;
+  return `<section class="card g" aria-label="Recuperar un entreno"><h2>Quedó sin hacer ${esc(m.label)}</h2><p class="small">Podés hacer hoy lo principal de los dos días: ${keep} ejercicios de ${esc(day.label)} y ${n} de ${esc(m.label)} con ${MIX_SETS} series cada uno. Dura parecido a un día normal.</p><div class="exf"><button type="button" class="pillbtn acc" data-act="mix-add" data-write>Combinar los dos días</button></div></section>`;
 }
 // Quitar o sumar ejercicios solo en esta sesión
 function offCard(day, sess) {
@@ -3417,11 +3423,14 @@ function bind() {
       const m = missedDay(S.person, curDay()); if (!m) return;
       sessExEdit((x, day) => { const picks = mixPicks(m, day, x).filter(e => !x.extra.some(y => y.key === e.key));
         picks.forEach(e => x.extra.push({ key: e.key, name: e.name, type: e.type, sets: MIX_SETS, reps: e.reps, note: e.note || "", ...(e.bar != null ? { bar: e.bar } : {}) }));
-        x.mix = { id: m.id, label: m.label, keys: picks.map(e => e.key) }; });
-      toast(`Sumado lo principal de ${m.label}`); render();
+        const drop = mixDrop(day, x).map(e => e.key).filter(k => !x.off.includes(k));
+        drop.forEach(k => { x.off.push(k); dropEmpty(x, k); });
+        x.mix = { id: m.id, label: m.label, keys: picks.map(e => e.key), off: drop }; });
+      toast(`Sesión combinada con ${m.label}`); render();
     }
     else if (a === "mix-undo") {
       sessExEdit(x => { const keys = (x.mix && x.mix.keys) || [], has = k => { const en = x.entries[k]; return !!en && (en.sets || []).some(isDone); };
+        const back = (x.mix && x.mix.off) || []; x.off = x.off.filter(k => !back.includes(k));
         x.extra = x.extra.filter(y => !keys.includes(y.key) || has(y.key)); keys.forEach(k => dropEmpty(x, k)); delete x.mix; });
       render();
     }
