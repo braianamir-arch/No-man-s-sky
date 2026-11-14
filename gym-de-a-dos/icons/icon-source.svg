@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F3F6FC"/><stop offset="1" stop-color="#D9E3F6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".52" r=".5">
+      <stop offset="0" stop-color="#CFE1FF" stop-opacity=".75"/><stop offset="1" stop-color="#CFE1FF" stop-opacity="0"/>
+    </radialGradient>
+    <!-- discos: cara frontal con volumen -->
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6FB6FF"/><stop offset=".18" stop-color="#3A8DFF"/><stop offset=".6" stop-color="#1B63E8"/><stop offset="1" stop-color="#0D3FB0"/>
+    </linearGradient>
+    <linearGradient id="plateSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".28"/><stop offset=".35" stop-color="#ffffff" stop-opacity="0"/><stop offset=".8" stop-color="#001a66" stop-opacity="0"/><stop offset="1" stop-color="#001a66" stop-opacity=".28"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8CC6FF"/><stop offset=".3" stop-color="#3F92FF"/><stop offset=".7" stop-color="#1A5FE0"/><stop offset="1" stop-color="#0E44B8"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7DBDFF"/><stop offset=".5" stop-color="#2B78F5"/><stop offset="1" stop-color="#0F47BC"/>
+    </linearGradient>
+    <linearGradient id="spec" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="soft2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="shadow" x="-40%" y="-200%" width="180%" height="500%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0B3A9E" flood-opacity=".28"/></filter>
+    <clipPath id="clipP1"><rect x="236" y="336" width="72" height="352" rx="36"/></clipPath>
+  </defs>
+
+  <!-- fondo -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <rect x="0" y="0" width="1024" height="420" fill="url(#spec)" opacity=".35"/>
+
+  <!-- sombra en el piso -->
+  <ellipse cx="512" cy="748" rx="370" ry="34" fill="#0B2E7A" opacity=".24" filter="url(#shadow)"/>
+  <g id="db">
+  <g filter="url(#drop)">
+    <!-- mango -->
+    <rect x="300" y="474" width="424" height="76" rx="38" fill="url(#bar)"/>
+    <rect x="318" y="484" width="388" height="16" rx="8" fill="#ffffff" opacity=".6" filter="url(#soft2)"/>
+    <rect x="318" y="532" width="388" height="8" rx="4" fill="#062a7a" opacity=".25" filter="url(#soft2)"/>
+    <!-- tapas de los extremos -->
+    <rect x="112" y="458" width="44" height="108" rx="22" fill="url(#cap)"/>
+    <rect x="868" y="458" width="44" height="108" rx="22" fill="url(#cap)"/>
+    <!-- discos chicos -->
+    <rect x="144" y="372" width="84" height="280" rx="42" fill="url(#plate)"/>
+    <rect x="144" y="372" width="84" height="280" rx="42" fill="url(#plateSide)"/>
+    <rect x="796" y="372" width="84" height="280" rx="42" fill="url(#plate)"/>
+    <rect x="796" y="372" width="84" height="280" rx="42" fill="url(#plateSide)"/>
+    <!-- discos grandes -->
+    <rect x="214" y="312" width="102" height="400" rx="51" fill="url(#plate)"/>
+    <rect x="214" y="312" width="102" height="400" rx="51" fill="url(#plateSide)"/>
+    <rect x="708" y="312" width="102" height="400" rx="51" fill="url(#plate)"/>
+    <rect x="708" y="312" width="102" height="400" rx="51" fill="url(#plateSide)"/>
+  </g>
+  <!-- brillos (luz arriba a la izquierda) -->
+  <g fill="#ffffff">
+    <rect x="234" y="338" width="24" height="170" rx="12" opacity=".8" filter="url(#soft2)"/>
+    <rect x="728" y="338" width="24" height="170" rx="12" opacity=".8" filter="url(#soft2)"/>
+    <rect x="160" y="394" width="18" height="110" rx="9" opacity=".72" filter="url(#soft2)"/>
+    <rect x="812" y="394" width="18" height="110" rx="9" opacity=".72" filter="url(#soft2)"/>
+    <rect x="122" y="472" width="12" height="40" rx="6" opacity=".6" filter="url(#soft2)"/>
+    <rect x="878" y="472" width="12" height="40" rx="6" opacity=".6" filter="url(#soft2)"/>
+    <ellipse cx="262" cy="324" rx="28" ry="9" opacity=".55" filter="url(#soft)"/>
+    <ellipse cx="756" cy="324" rx="28" ry="9" opacity=".55" filter="url(#soft)"/>
+  </g>
+  <!-- luz rebotada abajo -->
+  <g fill="#9FD0FF" opacity=".55">
+    <rect x="246" y="650" width="38" height="44" rx="19" filter="url(#soft)"/>
+    <rect x="740" y="650" width="38" height="44" rx="19" filter="url(#soft)"/>
+    <rect x="168" y="600" width="30" height="34" rx="15" filter="url(#soft)"/>
+    <rect x="820" y="600" width="30" height="34" rx="15" filter="url(#soft)"/>
+  </g>
+  </g>
+</svg>
