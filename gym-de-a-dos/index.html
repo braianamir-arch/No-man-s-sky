@@ -295,6 +295,9 @@ body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-in
 select.tin{appearance:auto}
 .switch{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600}
 .switch input{width:20px; height:20px; accent-color:var(--accent)}
+.rtsave{position:sticky; bottom:calc(var(--tabh) + 16px + env(safe-area-inset-bottom, 0px)); z-index:6; display:flex; align-items:center; gap:8px; padding:10px 10px 10px 16px; border-radius:var(--r); background:var(--sheet); box-shadow:var(--shadow)}
+.rtsave span{flex:1; font-size:14px; font-weight:600}
+#app[data-tab="settings"] .dock{display:none}
 .carebox{padding:12px 14px; border-radius:var(--r); align-items:flex-start}
 .carebox input{flex:none; margin-top:2px}
 .carebox span{display:grid; gap:2px; min-width:0}
@@ -737,44 +740,37 @@ const DEFAULTS = {
       E("polea-cuerda", "Empuje en polea con cuerda", "maquina", 3, "12-15", "", "C2"),
       E("vuelos-lat", "Vuelos laterales", "mancuerna", 4, "15") ] }
   ] },
-  // Rocío: mismos días que Braian (pierna, torso, descanso, pierna, torso). Glúteo 3 veces por semana (prioridad),
-  // superseries en torso para que entre todo en ~50 min, core para el abdomen y cardio al final para bajar de peso.
-  rocio: { rv: 2, days: [
-    { id: "lun", wd: 1, label: "Pierna A", focus: "Glúteo y cuádriceps", ex: [
-      E("sentadilla", "Sentadilla", "barra", 3, "8-10", "Primero: es la que más técnica pide"),
+  // Rocío (rv 3): la rutina de sus hojas. Glúteo dos veces por semana (lunes y jueves), espalda y bíceps el martes,
+  // pecho, hombros y tríceps el viernes. Se mantienen las claves de antes para que cada ejercicio siga su historial.
+  rocio: { rv: 3, days: [
+    { id: "lun", wd: 1, label: "Glúteos y femorales", focus: "Glúteo y femoral", ex: [
       E("hip-thrust", "Hip thrust", "barra", 4, "8-12", "Pausa de 1 s arriba"),
-      E("prensa", "Prensa (pies altos y abiertos)", "maquina", 3, "10-12", "", "A1"),
-      E("abduccion", "Abducción en máquina", "maquina", 3, "15-20", "", "A2"),
-      E("sillon-cuad", "Sillón de cuádriceps", "maquina", 3, "12-15", "", "B1"),
-      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "12-15", "", "B2"),
-      E("cinta-lun", "Caminata en cinta inclinada", "cardio", 1, "15-20 min") ] },
-    { id: "mar", wd: 2, label: "Torso A", focus: "Empuje, espalda y core", ex: [
-      E("press-inclinado", "Press inclinado (mancuerna)", "mancuerna", 3, "10-12", "", "A1"),
-      E("remo-barra", "Remo con barra", "barra", 3, "10-12", "", "A2"),
-      E("press-militar", "Press militar (mancuerna)", "mancuerna", 3, "10-12", "", "B1"),
-      E("jalon-pecho", "Jalón al pecho", "maquina", 3, "10-12", "", "B2"),
-      E("ext-triceps", "Extensión de tríceps en polea", "maquina", 3, "12-15", "", "C1"),
-      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15", "", "C2"),
-      E("plancha", "Plancha", "corporal", 3, "30-45 s"),
-      E("cardio-mar", "Cardio (bici o elíptico)", "cardio", 1, "10-15 min") ] },
-    { id: "jue", wd: 4, label: "Pierna B", focus: "Glúteo y femoral", ex: [
-      E("peso-muerto", "Peso muerto rumano", "barra", 3, "8-10", "Primero: espalda recta, cadera atrás"),
-      E("hip-thrust", "Hip thrust", "barra", 4, "8-12", "Pausa de 1 s arriba"),
-      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "10-12", "Por pierna, torso inclinado adelante", "A1"),
-      E("patada-gluteo", "Patada de glúteo", "maquina", 3, "12-15", "Por pierna", "A2"),
-      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "12-15", "", "B1"),
-      E("hiperext", "Hiperextensiones 45° (glúteo)", "corporal", 3, "12-15", "Espalda redondeada, apretar glúteo", "B2"),
-      E("cinta-jue", "Caminata en cinta inclinada", "cardio", 1, "15-20 min") ] },
-    { id: "vie", wd: 5, label: "Torso B", focus: "Espalda, brazos y glúteo", ex: [
-      E("jalon-neutro", "Jalón al pecho (agarre neutro)", "maquina", 3, "10-12", "", "A1"),
-      E("flexiones", "Flexiones", "corporal", 3, "8-12", "De rodillas si hace falta", "A2"),
-      E("remo-polea", "Remo en polea baja", "maquina", 3, "10-12", "", "B1"),
-      E("posterior", "Deltoides posterior", "mancuerna", 3, "12-15", "", "B2"),
-      E("curl-biceps", "Curl de bíceps", "mancuerna", 3, "10-12", "", "C1"),
-      E("ext-nuca", "Extensión tras nuca (mancuerna)", "mancuerna", 3, "12-15", "", "C2"),
-      E("abduccion", "Abducción en máquina", "maquina", 3, "15-20", "", "D1"),
-      E("elev-piernas", "Elevación de piernas", "corporal", 3, "10-15", "", "D2"),
-      E("cardio-vie", "Caminata", "cardio", 1, "10-15 min") ] }
+      E("peso-muerto", "Peso muerto rumano", "barra", 3, "8-12", "Espalda recta, cadera atrás"),
+      E("bulgaras", "Sentadilla búlgara", "mancuerna", 3, "8-10", "Por pierna"),
+      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "10-15"),
+      E("abduccion", "Abducción en máquina", "maquina", 3, "12-15"),
+      E("cinta-lun", "Cardio", "cardio", 1, "15-20 min") ] },
+    { id: "mar", wd: 2, label: "Espalda y bíceps", focus: "Espalda y bíceps", ex: [
+      E("jalon-pecho", "Jalón al pecho", "maquina", 3, "8-12"),
+      E("remo-polea", "Remo en polea baja", "maquina", 3, "8-12"),
+      E("posterior-maq", "Deltoides posteriores en máquina", "maquina", 3, "12-15"),
+      E("curl-biceps", "Curl de bíceps", "mancuerna", 3, "10-12"),
+      E("curl-martillo", "Curl martillo", "mancuerna", 3, "10-12") ] },
+    { id: "jue", wd: 4, label: "Glúteos y piernas", focus: "Glúteo y cuádriceps", ex: [
+      E("hip-thrust", "Hip thrust", "barra", 4, "10-12", "Pausa de 1 s arriba"),
+      E("prensa", "Prensa", "maquina", 3, "10-12"),
+      E("patada-gluteo", "Patada de glúteo en polea", "maquina", 3, "12-15", "Por pierna"),
+      E("sillon-femoral", "Sillón de femoral", "maquina", 3, "10-15"),
+      E("sillon-cuad", "Sillón de cuádriceps", "maquina", 3, "10-15"),
+      E("abduccion", "Abducción en máquina", "maquina", 3, "12-15"),
+      E("cinta-jue", "Cardio", "cardio", 1, "15-20 min") ] },
+    { id: "vie", wd: 5, label: "Pecho, hombros y tríceps", focus: "Pecho, hombros y tríceps", ex: [
+      E("press-inclinado", "Press inclinado", "mancuerna", 3, "8-12"),
+      E("press-militar", "Press militar", "mancuerna", 3, "8-12"),
+      E("vuelos-lat", "Vuelos laterales", "mancuerna", 3, "12-15"),
+      E("ext-triceps", "Extensión de tríceps en polea", "maquina", 3, "10-15"),
+      E("plancha", "Plancha abdominal", "corporal", 3, "20-40 s"),
+      E("cardio-vie", "Cardio", "cardio", 1, "15-20 min") ] }
   ] }
 };
 const PEOPLE = {
@@ -1021,7 +1017,7 @@ const S = {
   gluDraft: "", gluTime: "", gluCtx: null, gluMeal: null, gluNote: "", gluRange: 14, preDraft: "", openDays: new Set(), sec: "all",
   foodDraft: { n: "", p: "", k: "", c: "", g: "", save: false }, foodQ: "", foodOpen: new Set(),
   foodMeal: null, pickId: null, feQ: 1, feG: "", off: null, ai: null, aiText: null,
-  nutrOpen: false, plan: null, planSeed: 1, photos: {}, plateMeal: null, plateName: "", scrollMem: {}, homeSec: "all", setPage: null
+  nutrOpen: false, plan: null, planSeed: 1, photos: {}, rtDraft: {}, plateMeal: null, plateName: "", scrollMem: {}, homeSec: "all", setPage: null
 };
 const UI_KEY = "gym-de-a-dos:ui", LS_KEY = "gym-de-a-dos:data:v1";
 function loadUI() {
@@ -1130,7 +1126,7 @@ function weekDone(p) {
 // Modo cuidado: mientras dura una molestia o lesión, los días de pierna pasan a una rutina suave (sin sentadillas
 // ni prensa pesada). Se prende en Entreno y queda anotado en cada sesión que se hace así.
 const CARE_EX = [E("ext-cuad", "Extensiones de cuádriceps", "maquina", 3, "12-15"), E("gemelos-prensa", "Gemelos en prensa", "maquina", 3, "12-15"), E("curl-acostado", "Curl femoral acostado", "maquina", 3, "12-15")];
-const isLegDay = day => /pierna/i.test((day && day.label) || "");
+const isLegDay = day => /pierna|gl[uú]teo|femoral/i.test((day && day.label) || "");
 function careOn(day, sess) {
   if (!isLegDay(day)) return false;
   if (sess && sess.care != null) return !!sess.care;
@@ -1342,7 +1338,7 @@ function migrate() {
   const rb = S.docs["routines/braian"], JI = DEFAULTS.braian.days.flatMap(x => x.ex).find(e => e.key === "jalon-iso");
   if (S.canWrite && rb && Array.isArray(rb.days) && !rb.jiso) writeDoc("routines/braian", Object.assign({}, rb, { jiso: true, updated: Date.now(),
     days: rb.days.map(x => Object.assign({}, x, { ex: x.ex.map(e => e.key === "jalon-neutro" ? Object.assign({}, JI, e.ss ? { ss: e.ss } : {}) : e) })) }), 300);
-  // Rutina nueva de Rocío (rv 2): reemplaza la guardada una sola vez; los registros de entrenos quedan
+  // Rutina nueva de Rocío (rv 3): reemplaza la guardada una sola vez; los registros de entrenos quedan
   const r = S.docs["routines/rocio"];
   if (S.canWrite && r && (r.rv || 1) < DEFAULTS.rocio.rv) writeDoc("routines/rocio", Object.assign({}, r, { days: clone(DEFAULTS.rocio.days), rv: DEFAULTS.rocio.rv, updated: Date.now() }), 300);
 }
@@ -1422,7 +1418,7 @@ function render() {
   renderTabbar();
   $("#ptitle").textContent = pageTitle();
   const sub = S.tab === "settings" && !!S.setPage && S.mode !== "login"; $("#hback").hidden = !sub; $("#hsub").hidden = sub;
-  $("#app").dataset.mode = S.mode;
+  $("#app").dataset.mode = S.mode; $("#app").dataset.tab = S.tab;
   renderStatus(); renderBanner();
   const v = view();
   if (S.mode === "login") { v.innerHTML = viewLogin(); $("#sheet").innerHTML = ""; return; }
@@ -2078,6 +2074,7 @@ const EX_TECH = {
   "patada-gluteo": { id: "Kpajagk", mus: { glutes: 1, hams: 0.4 }, tips: ["Torso firme, apenas inclinado.", "Llevá la pierna atrás apretando el glúteo, sin arquear la espalda.", "Volvé lento, sin dejar caer el peso."] },
   flexiones: { id: "I4hDWkc", mus: { chest: 1, triceps: 0.5, shoulders: 0.5, abs: 0.2 }, tips: ["Manos un poco más abiertas que los hombros.", "Cuerpo recto de la cabeza a los talones.", "Bajá hasta que el pecho casi toque el piso. Si cuesta, de rodillas."] },
   "remo-polea": { id: "fUBheHs", mus: { upper: 1, lats: 0.7, biceps: 0.5 }, tips: ["Espalda recta, sin balancear el torso.", "Tirá el agarre al abdomen juntando los omóplatos.", "Estirá los brazos adelante dejando que se abra la espalda."] },
+  "posterior-maq": { id: "myfUsKf", mus: { rear: 1, upper: 0.5 }, tips: ["Pecho apoyado en el respaldo, manijas a la altura de los hombros.", "Abrí los brazos hacia atrás con los codos apenas flexionados.", "Peso liviano: que trabaje el hombro de atrás, no la espalda."] },
   posterior: { id: "8DiFDVA", mus: { rear: 1, upper: 0.5 }, tips: ["Torso inclinado casi paralelo al piso.", "Abrí los brazos hacia los costados con los codos apenas flexionados.", "Peso liviano y lento: es un músculo chico."] },
   "curl-biceps": { id: "3s4NnTh", mus: { biceps: 1, forearms: 0.3 }, tips: ["Codos pegados al cuerpo.", "Girá la palma hacia arriba mientras subís.", "Bajá lento, sin balancear el torso."] },
   "elev-piernas": { id: "WhuFnR7", mus: { abs: 1 }, tips: ["Zona lumbar pegada al banco o al piso.", "Subí las piernas juntas hasta la vertical.", "Bajá lento sin apoyar los pies entre repeticiones."] },
@@ -3056,7 +3053,7 @@ function viewSettings() {
   return `<div class="stack">
     <div class="sgroup">
       ${settingRow("goals", `${prof.protGoal || "—"} g de proteína · ${prof.kcalGoal ? fmtInt(prof.kcalGoal) + " kcal" : "sin meta de calorías"}`, "#FF6B5B")}
-      ${settingRow("routine", `${routine(p).days.length} días por semana`, "#5B7CFA")}
+      ${settingRow("routine", rtDirty(p) ? "Cambios sin guardar" : `${routine(p).days.length} días por semana`, "#5B7CFA")}
       ${settingRow("supps", act ? `${act} ${act === 1 ? "activo" : "activos"}` : "Ninguno", "#2FB66D")}
       ${settingRow("plates", prof.plates.length + prof.foods.length ? `${prof.plates.length + prof.foods.length} guardadas` : "", "#F5A524")}
       ${settingRow("fast", prof.fastOn ? `${prof.fastH || 16}:${24 - (prof.fastH || 16)}` : "Apagado", "#9B6BF2")}
@@ -3072,7 +3069,7 @@ function viewSettings() {
   </div>`;
 }
 function settingsPage(k) {
-  const p = S.person, prof = profile(p), R = routine(p), custom = !!S.docs["routines/" + p];
+  const p = S.person, prof = profile(p), R = rtCur(p), custom = !!S.docs["routines/" + p];
   const typeOpts = sel => Object.entries(TYPES).map(([k, t]) => `<option value="${k}"${k === sel ? " selected" : ""}>${t.label}</option>`).join("");
   const wdOpts = sel => `<option value=""${sel == null ? " selected" : ""}>Sin día</option>` + [1, 2, 3, 4, 5, 6, 0].map(i => `<option value="${i}"${sel === i ? " selected" : ""}>${WD[i]}</option>`).join("");
   const days = R.days.map(d => {
@@ -3142,9 +3139,10 @@ function settingsPage(k) {
         <label class="lbl" for="glu-post">2 h después, máximo<span class="fld"><input id="glu-post" type="text" inputmode="numeric" data-f="glu-post" value="${prof.glu.post}"><span class="u">mg/dL</span></span></label>
         <label class="lbl" for="glu-low">Baja por debajo de<span class="fld"><input id="glu-low" type="text" inputmode="numeric" data-f="glu-low" value="${prof.glu.low}"><span class="u">mg/dL</span></span></label>
       </div><p class="small">Vienen con los valores generales de la ADA. Si el médico indicó otros, usá esos.</p>` : ""}</section>`,
-    routine: () => `<p class="small" style="padding:0 4px">Los cambios se guardan solos. Cambiar un nombre no borra el historial del ejercicio.</p>        ${days}
+    routine: () => `<p class="small" style="padding:0 4px">Hacé los cambios y tocá <b>Guardar</b> para que se apliquen. Cambiar un nombre no borra el historial del ejercicio.</p>        ${days}
     <div class="exf"><button type="button" class="ghost" data-act="rt-add-day" data-write>+ Agregar día</button>${custom ? `<button type="button" class="danger-btn" data-act="rt-reset" data-write>Restaurar rutina original</button>` : ""}</div>
-    ${resetConf}`,
+    ${resetConf}
+    <div class="rtsave g" id="rtsave"${rtDirty(p) ? "" : " hidden"}><span>Cambios sin guardar</span><button type="button" class="ghost" data-act="rt-discard" data-write>Descartar</button><button type="button" class="pillbtn acc" data-act="rt-save" data-write>Guardar</button></div>`,
     health: () => stepsSettings(p), spotify: () => spotifySettings(), ai: () => aiSettings()
   };
   return `<div class="stack">${(pages[k] || pages.goals)()}</div>`;
@@ -3263,10 +3261,27 @@ function spotifySettings() {
   const on = !!spTok(S.person);
   return `<section class="card g"><h2>Spotify</h2><p class="small">${on ? `Conectado en este teléfono para ${esc(PEOPLE[S.person].name)}.` : "Sin conectar en este teléfono."}</p><div class="exf">${on ? `<button type="button" class="ghost" data-act="sp-logout" data-free>Desconectar</button>` : `<button type="button" class="pillbtn acc" data-act="sp-login" data-free>Conectar Spotify</button>`}</div></section>`;
 }
+// Los cambios de la rutina quedan en borrador hasta tocar "Guardar". Así se puede editar tranquilo sin que cambie
+// el Entreno a mitad de camino, y "Descartar" vuelve a lo guardado.
+const rtSaved = p => routine(p);
+const rtCur = p => S.rtDraft[p] || rtSaved(p);
+function rtDirty(p) { return !!S.rtDraft[p] && JSON.stringify(S.rtDraft[p].days) !== JSON.stringify(rtSaved(p).days); }
+function rtBar() {
+  const el = $("#rtsave"); if (!el) return;
+  const d = rtDirty(S.person); el.hidden = !d;
+}
 function routineEdit(fn) {
-  const p = S.person, R = clone(routine(p));
+  const p = S.person, R = clone(rtCur(p));
   if (fn(R) === false) return;
-  writeDoc("routines/" + p, { days: R.days, updated: Date.now() }, 500);
+  S.rtDraft[p] = R; rtBar();
+}
+function routineSave() {
+  const p = S.person, R = S.rtDraft[p]; if (!R) return;
+  // Se conservan las marcas internas de la rutina guardada (versión, etc.): sin ellas, al abrir la app se volvía a la original
+  const prev = S.docs["routines/" + p] || {}, keep = Object.assign({}, prev); delete keep.days;
+  if (keep.rv == null && DEFAULTS[p].rv) keep.rv = DEFAULTS[p].rv;
+  writeDoc("routines/" + p, Object.assign(keep, { days: R.days, updated: Date.now() }), 100);
+  delete S.rtDraft[p]; haptic(); toast("Rutina guardada");
 }
 function editRoutineField(t) {
   const dayEl = t.closest("[data-day]"); if (!dayEl) return;
@@ -3314,7 +3329,7 @@ function suppField(t) {
 function confirmYes() {
   const c = S.confirm || ""; S.confirm = null;
   if (c === "del-sess") removeDoc(sessPath(S.person, S.date, curDay().id));
-  else if (c === "reset") removeDoc("routines/" + S.person);
+  else if (c === "reset") { delete S.rtDraft[S.person]; removeDoc("routines/" + S.person); toast("Rutina original restaurada"); }
   else if (c.startsWith("del-day:")) { const id = c.slice(8); routineEdit(R => { R.days = R.days.filter(d => d.id !== id); }); }
   render();
 }
@@ -3481,6 +3496,8 @@ function bind() {
     else if (a === "copy") { const src = document.getElementById(b.dataset.src || "sc-link"); if (!src) return; const txt = src.textContent; const done = () => toast("Copiado");
       const fallback = () => { const r = document.createRange(); r.selectNodeContents(src); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Seleccionado: copialo con el menú del teléfono"); };
       try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (err) { fallback(); } }
+    else if (a === "rt-save") { routineSave(); render(); }
+    else if (a === "rt-discard") { delete S.rtDraft[S.person]; S.confirm = null; render(); }
     else if (a.startsWith("rt-")) routineAction(a, b);
   });
   app.addEventListener("keydown", e => {
